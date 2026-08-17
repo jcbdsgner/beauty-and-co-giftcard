@@ -6,7 +6,7 @@ import { ReferenceBox } from "@/components/ui/reference-box";
 import { getCardById } from "@/lib/cards/persistence";
 import type { GiftCard } from "@/lib/cards/types";
 import { getRelationshipLabel } from "@/lib/cards/relationship";
-import { AVAILABILITY_LABELS, getCardAvailability } from "@/lib/cards/availability";
+import { AVAILABILITY_LABELS, AVAILABILITY_TEXT_CLASSES, getCardAvailability } from "@/lib/cards/availability";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
 
@@ -64,9 +64,7 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
               {relationshipLabel ?? "Votre carte cadeau"}
             </p>
             <span
-              className={`shrink-0 rounded-full bg-[#f5f5f5] px-3 py-1 text-sm ${
-                availability === "epuisee" ? "text-[var(--text-secondary)]" : "text-[var(--on-core-brand-color)]"
-              }`}
+              className={`shrink-0 rounded-full bg-[#f5f5f5] px-3 py-1 text-sm ${AVAILABILITY_TEXT_CLASSES[availability]}`}
             >
               {AVAILABILITY_LABELS[availability]}
             </span>

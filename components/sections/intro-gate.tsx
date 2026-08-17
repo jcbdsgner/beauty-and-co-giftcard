@@ -261,39 +261,43 @@ export function IntroGate() {
             // Scrim behind the bottom links: the video's content varies by frame, so
             // a fixed crop can't guarantee contrast — a gradient guarantees it regardless
             // of what's underneath (here, the ribbon tail was crossing right through them).
+            // Taller and darker on mobile only: the stacked nav+contacts column (see
+            // below) reaches higher up the screen than the sm+ side-by-side row does,
+            // so the shorter/lighter original band left its top lines washed out.
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/70 via-black/25 to-transparent sm:h-72 lg:h-80"
+              className="pointer-events-none absolute inset-x-0 bottom-0 h-80 bg-gradient-to-t from-black/85 via-black/45 to-transparent sm:h-72 sm:from-black/70 sm:via-black/25 lg:h-80"
             />
           )}
 
           {state === "idle" && (
-            <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[101] flex items-end justify-between pr-6 pl-6 sm:bottom-10 sm:pr-12 sm:pl-12 lg:bottom-14 lg:pr-[72px] lg:pl-[72px]">
-              <nav className="pointer-events-auto flex flex-col items-start gap-2">
+            // Stacked, centered column on mobile — nav above contacts — so
+            // both stay visible instead of hiding the contacts block for
+            // lack of room. From sm up it reverts to the original row, nav
+            // left / contacts right, sharing the bottom line.
+            <div className="pointer-events-none absolute inset-x-0 bottom-6 z-[101] flex flex-col items-center gap-3 pr-6 pl-6 sm:flex-row sm:items-end sm:justify-between sm:gap-4 sm:bottom-10 sm:pr-12 sm:pl-12 lg:bottom-14 lg:pr-[72px] lg:pl-[72px]">
+              <nav className="pointer-events-auto flex flex-col items-center gap-1.5 sm:items-start sm:gap-2">
                 <a
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-sans text-lg uppercase tracking-[0.2em] text-white transition hover:opacity-80 sm:text-xl"
+                  className="inline-flex items-center gap-1.5 font-sans text-base uppercase tracking-[0.15em] text-white transition hover:opacity-80 sm:gap-2 sm:text-xl sm:tracking-[0.2em]"
                 >
                   Prendre rendez-vous
-                  <ArrowUpRight className="size-6" aria-hidden="true" />
+                  <ArrowUpRight className="size-5 sm:size-6" aria-hidden="true" />
                 </a>
                 <a
                   href="#"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 font-sans text-lg uppercase tracking-[0.2em] text-white transition hover:opacity-80 sm:text-xl"
+                  className="inline-flex items-center gap-1.5 font-sans text-base uppercase tracking-[0.15em] text-white transition hover:opacity-80 sm:gap-2 sm:text-xl sm:tracking-[0.2em]"
                 >
                   notre boutique en ligne
-                  <ArrowUpRight className="size-6" aria-hidden="true" />
+                  <ArrowUpRight className="size-5 sm:size-6" aria-hidden="true" />
                 </a>
               </nav>
 
-              {/* Hidden below sm: "notre boutique en ligne" wraps to two
-                  lines at narrow widths and collides with this block, which
-                  shares the same bottom row — kept only from sm up. */}
-              <div className="pointer-events-auto hidden flex-col items-end gap-3 sm:flex">
+              <div className="pointer-events-auto flex flex-col items-center gap-2 sm:items-end sm:gap-3">
                 <div className="flex items-center gap-3">
                   {SOCIAL_LINKS.map((social) => (
                     <a
@@ -314,7 +318,7 @@ export function IntroGate() {
                     </a>
                   ))}
                 </div>
-                <div className="flex flex-col items-end gap-1 font-sans text-sm text-white">
+                <div className="flex flex-col items-center gap-1 font-sans text-sm text-white sm:items-end">
                   <span>{CONTACT_INFO.phone}</span>
                   <a href={`mailto:${CONTACT_INFO.email}`} className="transition hover:opacity-80">
                     {CONTACT_INFO.email}

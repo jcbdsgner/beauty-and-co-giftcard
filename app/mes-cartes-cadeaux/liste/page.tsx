@@ -1,16 +1,27 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import { Gift } from "lucide-react";
+import { Gift, Store, TabletSmartphone, Truck } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
 import { BackLinkWithLogo } from "@/components/layout/back-link-with-logo";
 import { Button } from "@/components/ui/button";
 import { getCardsForEmail } from "@/lib/cards/persistence";
 import type { GiftCard } from "@/lib/cards/types";
 import { getRelationshipLabel } from "@/lib/cards/relationship";
-import { AVAILABILITY_LABELS, getCardAvailability } from "@/lib/cards/availability";
+import { AVAILABILITY_LABELS, AVAILABILITY_TEXT_CLASSES, getCardAvailability } from "@/lib/cards/availability";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
+
+// Mirrors the icons used in the mode-de-livraison picker: a card's mode icon
+// should be recognizable at a glance in the list, not a repeated Gift icon
+// that carries no information. Gift stays as the fallback for any legacy
+// mode string that isn't one of the three current delivery modes.
+const MODE_ICONS: Record<string, LucideIcon> = {
+  numerique: TabletSmartphone,
+  retrait: Store,
+  postal: Truck,
+};
 
 type PageProps = {
   searchParams: Promise<{ email?: string }>;
@@ -42,38 +53,38 @@ export default function MesCartesCadeauxListePage({ searchParams }: PageProps) {
         </p>
       ) : (
         <div className="flex w-[min(92vw,34rem)] flex-col overflow-hidden rounded-3xl border border-[var(--brand-color-1)] bg-white">
-          {cards.map((card, index) => (
-            <Link
-              key={card.id}
-              href={`/mes-cartes-cadeaux/liste/${card.id}${buildQuery({ email })}`}
-              className={`flex items-center gap-4 px-6 py-4 transition hover:bg-[#f5f5f5] ${
-                index > 0 ? "border-t border-[var(--brand-color-1)]" : ""
-              }`}
-            >
-              <Gift size={28} strokeWidth={1.5} className="text-[var(--button-2-color)] shrink-0" />
-              <div className="flex flex-1 flex-col gap-1">
-                <span className="text-[var(--on-core-brand-color)] font-medium">
-                  {formatFcfa(card.balance)}
-                  {card.balance !== card.amount ? ` / ${formatFcfa(card.amount)}` : ""}
-                </span>
-                <span className="text-[var(--text-secondary)] text-base">
-                  {MODE_LABELS[card.mode] ?? card.mode} · {card.reference}
-                </span>
-                <span className="text-[var(--text-secondary)] text-base">
-                  {email ? getRelationshipLabel(card, email) : ""}
-                </span>
-              </div>
-              <span
-                className={`shrink-0 rounded-full bg-[#f5f5f5] px-3 py-1 text-sm ${
-                  getCardAvailability(card) === "epuisee"
-                    ? "text-[var(--text-secondary)]"
-                    : "text-[var(--on-core-brand-color)]"
-                }`}
+          {cards.map((card, index) => {
+            const availability = getCardAvailability(card);
+            const ModeIcon = MODE_ICONS[card.mode] ?? Gift;
+            return (
+              <Link
+                key={card.id}
+                href={`/mes-cartes-cadeaux/liste/${card.id}${buildQuery({ email })}`}
+                className={`flex items-center gap-4 px-6 py-4 transition hover:bg-[#f5f5f5] ${
+                  index > 0 ? "border-t border-[var(--brand-color-1)]" : ""
+                } ${availability === "epuisee" ? "opacity-60" : ""}`}
               >
-                {AVAILABILITY_LABELS[getCardAvailability(card)]}
-              </span>
-            </Link>
-          ))}
+                <ModeIcon size={28} strokeWidth={1.5} className="text-[var(--button-2-color)] shrink-0" />
+                <div className="flex flex-1 flex-col gap-1.5">
+                  <span className="text-[var(--button-2-color)] text-xs font-semibold tracking-[0.08em] uppercase">
+                    {MODE_LABELS[card.mode] ?? card.mode}
+                  </span>
+                  <span className="text-[var(--on-core-brand-color)] text-lg font-bold leading-tight sm:text-xl sm:font-semibold">
+                    {formatFcfa(card.balance)}
+                    {card.balance !== card.amount ? ` / ${formatFcfa(card.amount)}` : ""}
+                  </span>
+                  <span className="text-[var(--text-secondary)] text-sm">
+                    {email ? getRelationshipLabel(card, email) : ""}
+                  </span>
+                </div>
+                <span
+                  className={`shrink-0 rounded-full bg-[#f5f5f5] px-3 py-1 text-sm ${AVAILABILITY_TEXT_CLASSES[availability]}`}
+                >
+                  {AVAILABILITY_LABELS[availability]}
+                </span>
+              </Link>
+            );
+          })}
         </div>
       )}
 

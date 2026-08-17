@@ -29,7 +29,9 @@ export default function ChoixSalonPage({ searchParams }: PageProps) {
             carried.from === "recap"
               ? `/recapitulatif${buildQuery({ ...next, from: undefined })}`
               : `/montant${buildQuery(next)}`;
-          return <OptionCard key={salon} href={href} icon={MapPin} label={SALON_LABELS[salon]} />;
+          return (
+            <OptionCard key={salon} href={href} icon={MapPin} label={SALON_LABELS[salon]} size="sm" />
+          );
         })}
       </div>
     </FlowScreen>

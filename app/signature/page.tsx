@@ -38,13 +38,20 @@ export default function SignaturePage({ searchParams }: PageProps) {
           icon={PenLine}
           label="Un alias"
           href={`/signature/alias${buildQuery(carried)}`}
+          size="sm"
         />
         <OptionCard
           icon={UserRound}
           label={buyerFullName ? `Mon nom (${buyerFullName})` : "Mon nom"}
           onClick={() => proceed("nom", buyerFullName)}
+          size="sm"
         />
-        <OptionCard icon={EyeOff} label="Ne rien indiquer" onClick={() => proceed("rien", "")} />
+        <OptionCard
+          icon={EyeOff}
+          label="Ne rien indiquer"
+          onClick={() => proceed("rien", "")}
+          size="sm"
+        />
       </div>
     </FlowScreen>
   );

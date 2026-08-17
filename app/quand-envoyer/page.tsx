@@ -33,11 +33,13 @@ export default function QuandEnvoyerPage({ searchParams }: PageProps) {
               ? `/recapitulatif${buildQuery({ ...carried, envoi: "maintenant", from: undefined })}`
               : `/apercu-carte${buildQuery({ ...carried, envoi: "maintenant" })}`
           }
+          size="sm"
         />
         <OptionCard
           icon={CalendarClock}
           label="Programmer"
           href={`/quand-envoyer/programmer${buildQuery(carried)}`}
+          size="sm"
         />
       </div>
     </FlowScreen>

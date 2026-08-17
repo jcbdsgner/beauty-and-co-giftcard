@@ -24,11 +24,13 @@ export default function PourQuiPage({ searchParams }: PourQuiPageProps) {
           icon={Gift}
           label="Pour quelqu'un d'autre"
           href={`/coordonnees-destinataire${buildQuery(carried)}`}
+          size="sm"
         />
         <OptionCard
           icon={UserRound}
           label="Pour moi-même"
           href={`/vos-coordonnees${buildQuery({ ...carried, pour: "moi" })}`}
+          size="sm"
         />
       </div>
     </FlowScreen>

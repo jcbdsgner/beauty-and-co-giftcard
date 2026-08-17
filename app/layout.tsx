@@ -4,7 +4,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { ScreenTransition } from "@/components/ui/screen-transition";
 import { WatercolorBackgroundClient } from "@/components/canvas/watercolor-background-client";
-import { DebugErrorOverlay } from "@/components/ui/debug-error-overlay";
 
 const cabinetGrotesk = localFont({
   src: "./fonts/CabinetGrotesk-Variable.woff2",
@@ -39,7 +38,6 @@ export default function RootLayout({
       className={`${cabinetGrotesk.variable} ${prata.variable} ${benedict.variable} h-full antialiased`}
     >
       <body className="min-h-full">
-        <DebugErrorOverlay />
         <WatercolorBackgroundClient />
         <ScreenTransition>{children}</ScreenTransition>
       </body>

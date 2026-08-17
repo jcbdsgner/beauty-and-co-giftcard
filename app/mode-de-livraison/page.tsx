@@ -38,7 +38,7 @@ export default function ModeDeLivraisonPage({ searchParams }: PageProps) {
               : carried.from === "recap"
                 ? `/recapitulatif${buildQuery({ ...next, from: undefined })}`
                 : `/montant${buildQuery(next)}`;
-          return <OptionCard key={mode} href={href} icon={icon} label={label} />;
+          return <OptionCard key={mode} href={href} icon={icon} label={label} size="sm" />;
         })}
       </div>
     </FlowScreen>
