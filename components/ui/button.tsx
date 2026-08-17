@@ -22,7 +22,7 @@ const sizes: Record<Size, string> = {
 };
 
 const base =
-  "inline-flex items-center justify-center whitespace-nowrap rounded-full font-[450] transition disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#e9e4e3] disabled:text-[#a3a3a3] disabled:shadow-none disabled:border-transparent";
+  "inline-flex items-center justify-center whitespace-nowrap rounded-full font-[450] transition active:scale-[0.97] disabled:pointer-events-none disabled:cursor-not-allowed disabled:bg-[#e9e4e3] disabled:text-[#a3a3a3] disabled:shadow-none disabled:border-transparent disabled:active:scale-100";
 
 type CommonProps = {
   children: React.ReactNode;

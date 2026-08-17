@@ -1,7 +1,6 @@
 "use client";
 
 import { use, useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { BackLinkWithLogo } from "@/components/layout/back-link-with-logo";
 import { ReferenceBox } from "@/components/ui/reference-box";
 import { getCardById } from "@/lib/cards/persistence";
@@ -10,11 +9,6 @@ import { getRelationshipLabel } from "@/lib/cards/relationship";
 import { AVAILABILITY_LABELS, getCardAvailability } from "@/lib/cards/availability";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
-
-const WatercolorBackground = dynamic(
-  () => import("@/components/canvas/watercolor-background").then((m) => m.WatercolorBackground),
-  { ssr: false },
-);
 
 type PageProps = {
   params: Promise<{ id: string }>;
@@ -49,7 +43,6 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
   if (card === null) {
     return (
       <section className="relative flex min-h-svh flex-col items-center justify-center gap-6 px-6 py-16 text-center">
-        <WatercolorBackground />
         <BackLinkWithLogo backHref={backHref} />
         <p className="mt-24 text-[var(--text-secondary)]">Carte introuvable.</p>
       </section>
@@ -62,8 +55,6 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
 
   return (
     <section className="relative flex min-h-svh flex-col items-center gap-8 px-6 pt-28 pb-16">
-      <WatercolorBackground />
-
       <BackLinkWithLogo backHref={backHref} />
 
       <div className="flex w-full max-w-4xl flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-8">

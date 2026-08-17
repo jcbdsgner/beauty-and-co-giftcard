@@ -4,6 +4,11 @@ export const MODE_LABELS: Record<string, string> = {
   postal: "Livraison",
 };
 
+export const SALON_LABELS: Record<string, string> = {
+  "sea-plaza": "Sea Plaza",
+  almadies: "Almadies",
+};
+
 export function formatFcfa(amount: number | string | undefined): string {
   const value = typeof amount === "string" ? Number(amount) : amount;
   return value !== undefined && Number.isFinite(value)

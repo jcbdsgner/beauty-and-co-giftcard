@@ -47,6 +47,10 @@ retrouver mes cartes cadeaux plus tard, même si je n'ai pas de compte.
 | 11 | Geste de passage à "Récupérée" (retrait en salon) | **Code de retrait affiché au client** (référence de commande + QR) sur l'écran Confirmation et dans "Mes cartes cadeaux". Le personnel le scanne/saisit dans un outil interne (hors scope de ce document — pas un écran du site public) pour marquer la carte "Récupérée". |
 | 12 | Frais de livraison (mode = postal) | **Frais fixe de 2 000 FCFA**, ajouté au montant de la carte sur le Récapitulatif et le Paiement (ligne dédiée + total). Ne fait pas partie de la valeur/solde de la carte cadeau elle-même — c'est un frais de service, pas un montant chargeable en boutique. |
 | 13 | Zone de livraison couverte | **Quartiers de Dakar + Mbour**, choisis via un sélecteur dédié sur l'écran "Adresse de livraison" (pas de saisie libre de ville) — cohérent avec un service de coursier local plutôt qu'un envoi postal national. |
+| 14 | Place de la prévisualisation 3D | **Écran dédié "Aperçu de la carte", juste avant Récapitulatif** (pas fondue dans l'écran Récapitulatif, pas avant que les données soient connues). Raisons : (a) le recto affiche le montant et le verso affiche message + signature — la carte ne peut être rendue fidèlement qu'une fois ces champs connus, donc pas plus tôt que la fin de la saisie ; (b) Récapitulatif reste l'écran transactionnel dense (lignes "Modifier", total, "Payer") — y ajouter un canvas 3D dilue le CTA de paiement et alourdit un écran déjà chargé ; (c) l'ordre "aperçu visuel émotionnel" → "relecture rationnelle avant paiement" suit un séquençage éprouvé pour un achat-cadeau (l'enthousiasme d'abord, la vérification des détails juste avant de payer). |
+| 15 | Choix du salon (mode = retrait) | **Écran dédié "Choisir un salon", juste après Mode de livraison** (avant Montant) — deux salons pour l'instant : **Sea Plaza** et **Almadies**. Placé là plutôt qu'avec les coordonnées destinataire car c'est un attribut du mode choisi par l'acheteur (où le code de retrait sera présenté), pas une information sur le destinataire ; même pattern OptionCard que les autres choix binaires/ternaires du parcours (Mode de livraison, Pour qui ?, Quand l'envoyer ?). |
+| 16 | Programmer une date, modes concernés | **Numérique et Livraison, pas Retrait en salon.** "Quand l'envoyer ?" s'ouvre pour les deux modes qui ont une notion de dispatch à une date choisie (email envoyé à une heure précise, colis expédié un jour précis) ; le retrait en salon en est exclu par choix produit — le code de retrait reste valable dès l'achat, sans date à cibler. |
+| 17 | Destinataire, structure | **Un seul écran "Destinataire"** : **Prénom** + **Nom**, puis **Téléphone** + **Email** (au moins un des deux requis), quel que soit le mode de réception — le téléphone n'est plus réservé au mode retrait/postal (SMS, livreur), il est un canal de contact valable pour tous les modes au même titre que l'email. Fusionné depuis deux écrans séparés (revue UX du 2026-08-14, écrans jugés incohérents avec l'écran "Vos coordonnées" de l'acheteur, qui tient sur un seul écran pour la même quantité d'information) — mis en page en grille 2 colonnes (Prénom/Nom sur une ligne, Téléphone/Email sur l'autre, empilés en une colonne sur mobile) pour rester court sans risquer de faire défiler la page jusqu'au bouton "Continuer" ; même traitement 2 colonnes appliqué à "Vos coordonnées" pour la cohérence. |
 
 ### Constat technique — "le même compte que b&co"
 
@@ -76,19 +80,25 @@ Ni l'un ni l'autre n'apparaît sur Landing (pas d'étape précédente, rien à r
 graph LR
   A[Landing] --> B[Mode de livraison]
   A -.->|Voir mes cartes cadeaux| N[Mes cartes cadeaux — entrée]
-  B --> C[Montant]
+  B -->|mode = retrait| B1[Choisir un salon]
+  B1 --> C[Montant]
+  B -->|mode != retrait| C[Montant]
   C --> D[Pour qui ?]
-  D -->|pour quelqu'un d'autre| E[Coordonnées destinataire]
+  D -->|pour quelqu'un d'autre| E[Destinataire]
   D -->|pour moi-même| G[Vos coordonnées]
   E -->|mode = postal| E1[Adresse de livraison]
   E -->|mode != postal| F[Message]
-  E1 --> F[Message]
-  F --> G[Vos coordonnées]
-  G --> H[Signature]
-  H --> I{Numérique ?}
-  I -->|oui| J[Quand l'envoyer ?]
-  I -->|non| K[Récapitulatif]
-  J --> K
+  E1 -->|pour quelqu'un d'autre| F
+  F --> G
+  G -->|pour quelqu'un d'autre| H[Signature]
+  G -->|pour moi-même, mode = postal| E1
+  G -->|pour moi-même, mode != postal| I{Retrait en salon ?}
+  E1 -->|pour moi-même| I
+  H --> I{Retrait en salon ?}
+  I -->|non| J[Quand l'envoyer ?]
+  I -->|oui| K0[Aperçu de la carte]
+  J --> K0
+  K0 --> K[Récapitulatif]
   K --> L[Paiement simulé]
   L --> M[Confirmation]
   L -->|échec simulé| L
@@ -114,10 +124,19 @@ Landing (page marketing existante — Hero)
 ```
 Mode de livraison
 - "Numérique" → Montant                    (mode = numérique)
-- "Retrait en salon" → Montant              (mode = retrait)
+- "Retrait en salon" → Choisir un salon     (mode = retrait)
 - "Livraison" → Montant                     (mode = postal)
 - ← Landing
 [ 3 options avec description courte : délai, gratuité/frais, ce que reçoit le destinataire ]
+```
+
+```
+Choisir un salon                              (seulement si mode = retrait)
+- "Sea Plaza" → Montant
+- "Almadies" → Montant
+- ← Mode de livraison
+[ 2 options, même pattern que les autres choix binaires du parcours (OptionCard) —
+  détermine où le destinataire/l'acheteur viendra présenter le code de retrait ]
 ```
 
 ```
@@ -130,44 +149,51 @@ Montant
 
 ```
 Pour qui ?
-- "Pour quelqu'un d'autre" → Coordonnées destinataire
+- "Pour quelqu'un d'autre" → Destinataire
 - "Pour moi-même" → Vos coordonnées          (saute destinataire + message + signature)
 - ← Montant
 [ deux options, pas de formulaire sur cet écran ]
 ```
 
 ```
-Coordonnées destinataire                     (seulement si "pour quelqu'un d'autre" — 1 destinataire)
+Destinataire                                  (seulement si "pour quelqu'un d'autre" — 1 destinataire)
 - Continuer → Adresse de livraison (si mode = postal) / Message (sinon)
 - ← Pour qui ?
-[ contenu dépend du mode choisi :
-  numérique → nom du destinataire + email du destinataire
-  retrait en salon → nom du destinataire (email optionnel) + téléphone (obligatoire — SMS "prête au retrait")
-  envoi postal → nom complet + téléphone (obligatoire — pour le livreur) ; l'adresse est sur l'écran suivant ]
+[ Prénom + Nom, puis Téléphone + Email (au moins un des deux obligatoire, quel que soit
+  le mode — voir décision 17) ; mise en page 2 colonnes (Prénom/Nom, Téléphone/Email),
+  empilée en 1 colonne sur mobile — même traitement que "Vos coordonnées" ]
 ```
 
 ```
 Adresse de livraison                          (seulement si mode = postal)
-- Continuer → Message
-- ← Coordonnées destinataire
+- Continuer → Message (venant de Destinataire) / Quand l'envoyer ? (venant de Vos coordonnées, "pour moi-même")
+- ← Destinataire (venant de Destinataire) / Vos coordonnées (venant de Vos coordonnées)
 [ quartier (sélecteur — quartiers de Dakar + Mbour) + adresse complète en texte libre
   (rue, bâtiment, étage, digicode...) — pensé pour qu'un livreur type coursier s'y retrouve,
-  pas pour un envoi postal administratif ]
+  pas pour un envoi postal administratif. Même écran, mêmes champs, atteint depuis deux
+  endroits : "pour quelqu'un d'autre" (après Destinataire) et "pour moi-même" avec livraison
+  postale (après Vos coordonnées) — sans ça, un achat pour soi-même en livraison postale
+  n'a nulle part où indiquer où expédier la carte. ]
 ```
 
 ```
 Message                                       (facultatif)
 - Continuer (même vide) → Vos coordonnées
-- ← Adresse de livraison (si mode = postal) / Coordonnées destinataire (sinon)
+- ← Adresse de livraison (si mode = postal) / Destinataire (sinon)
 [ champ texte libre + compteur de caractères ]
 ```
 
 ```
 Vos coordonnées                               (l'acheteur — toujours demandé, achat en invité)
-- Continuer → Signature
+- Continuer → Signature (pour quelqu'un d'autre)
+             / Adresse de livraison (pour moi-même, mode = postal)
+             / Quand l'envoyer ? (pour moi-même, mode ≠ postal et ≠ retrait)
+             / Aperçu de la carte (pour moi-même, mode = retrait)
 - ← Message (ou ← Pour qui ? si "pour moi-même")
-[ nom complet + email de l'acheteur — sert aussi à préremplir l'option "Mon nom" de l'écran Signature
-  et à identifier ses cartes cadeaux plus tard (voir "Demander un lien") ]
+[ Prénom + Nom, Téléphone + Email — tous obligatoires (contrairement au destinataire, où
+  seul l'un des deux canaux est requis : l'acheteur est toujours le contact fiable pour
+  le reçu et le suivi de commande) ; sert aussi à préremplir l'option "Mon nom" de l'écran
+  Signature et à identifier ses cartes cadeaux plus tard (voir "Demander un lien") ]
 ```
 
 ```
@@ -180,20 +206,33 @@ Signature                                     (seulement si carte pour quelqu'un
 ```
 
 ```
-Quand l'envoyer ?                             (seulement si mode = numérique)
-- "Envoyer maintenant" → Récapitulatif
-- "Programmer" (date + heure) → Récapitulatif
+Quand l'envoyer ?                             (tous les modes sauf retrait en salon)
+- "Envoyer maintenant" / "Expédier maintenant" (postal) → Aperçu de la carte
+- "Programmer" (date) → Aperçu de la carte
 - ← Signature
-[ sélecteur de date désactivé pour les dates passées ]
+[ sélecteur de date désactivé pour les dates passées ; libellés adaptés au mode
+  (numérique = "envoyer", postal = "expédier") mais même écran et même pattern —
+  voir décision 16 pour pourquoi retrait en salon est exclu ]
+```
+
+```
+Aperçu de la carte
+- "Voir le récapitulatif" → Récapitulatif
+- ← dernier écran rempli (Quand l'envoyer ? / Signature / Vos coordonnées selon le mode)
+[ prévisualisation 3D de la carte composée (recto + verso, les deux frames Figma), sur fond
+  blanc, orbite libre à la souris/au doigt ; recto = montant, verso = message + signature
+  (verso sans texte si "pour moi-même") — voir décision 14 pour la place de cet écran ]
 ```
 
 ```
 Récapitulatif
 - "Modifier" sur chaque bloc → renvoie à l'écran correspondant (données conservées)
 - "Payer" → Paiement
-- ← dernier écran rempli (Quand l'envoyer ? ou Signature selon le mode)
-[ résumé : mode, montant, frais de livraison (si mode = postal, non modifiable ici),
-  destinataire, message, signature, date d'envoi, total à payer (montant + livraison) ]
+- ← Aperçu de la carte
+[ résumé : mode, salon de retrait (si mode = retrait), montant, frais de livraison
+  (si mode = postal, non modifiable ici), destinataire (ou, pour un achat "pour
+  moi-même" en livraison postale, la propre adresse de livraison de l'acheteur),
+  message, signature, date d'envoi, total à payer (montant + livraison) ]
 ```
 
 ```
@@ -211,8 +250,8 @@ Confirmation
 - "Voir mes cartes cadeaux" → Mes cartes cadeaux — entrée
 [ contenu dépend du mode :
   numérique → confirmation d'envoi (immédiat ou programmé)
-  retrait en salon → adresse, horaires, code de retrait (référence de commande + QR) à présenter en salon
-  envoi postal → délai de livraison estimé ]
+  retrait en salon → salon choisi (Sea Plaza / Almadies), code de retrait (référence de commande + QR) à présenter en salon
+  envoi postal → délai de livraison estimé, expédition immédiate ou à la date programmée ]
 ```
 
 ---
@@ -262,7 +301,7 @@ Mes cartes cadeaux — liste
 Une carte cadeau traverse ces états, dans cet ordre (le mode de livraison choisit lesquels s'appliquent) :
 
 1. **Payée** — paiement (simulé) validé, la carte existe.
-2. **Programmée** — *numérique + envoi différé uniquement* : en attente de la date d'envoi choisie.
+2. **Programmée** — *numérique ou postal, envoi/expédition différé(e) uniquement* (pas retrait en salon, voir décision 16) : en attente de la date choisie.
 3. **Envoyée** (numérique) / **Prête au retrait** (retrait en salon) / **Expédiée** (envoi postal).
 4. **Récupérée** (retrait en salon, confirmation manuelle en salon) / **Livrée** (envoi postal, si tracée) — numérique n'a pas cet état, "Envoyée" suffit.
 5. **Utilisée** — solde dépensé en salon, totalement ou partiellement (garder le solde restant visible si partiel).
@@ -277,7 +316,7 @@ Une carte n'a jamais deux états actifs à la fois ; "Utilisée (partielle)" et 
 - **Chaque affordance a une destination nommée** — aucun bouton "Continuer" sans écran cible ci-dessus.
 - **Chemins d'erreur couverts** : montant hors bornes, email/adresse invalide, échec de paiement simulé — tous restent sur l'écran courant avec les données déjà saisies conservées (pas de perte de saisie).
 - **Retour arrière non destructif** : revenir en arrière doit toujours préremplir les champs déjà renseignés.
-- **Le mode de livraison conditionne le contenu**, pas la structure : "Coordonnées destinataire" et "Quand l'envoyer ?" changent de champs ou disparaissent selon numérique / retrait / postal, mais restent le même écran dans le flow.
+- **Le mode de livraison conditionne le contenu**, pas la structure : "Destinataire" et "Quand l'envoyer ?" changent de champs ou disparaissent selon numérique / retrait / postal, mais restent le même écran dans le flow.
 - **Pas de reprise = pas d'état à persister** avant "Payée" : simplifie tout le parcours d'achat, cohérent avec la décision 1.
 - **Le "Revenir en arrière" et le récap permanent courent sur tout le parcours d'achat** (cf. Conventions transverses) — pas à redéfinir écran par écran.
 

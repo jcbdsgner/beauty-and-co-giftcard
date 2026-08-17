@@ -7,9 +7,6 @@ type Size = "default" | "sm";
 type OptionCardProps = {
   icon: LucideIcon;
   label: string;
-  /** Short secondary line under the label (e.g. fee/delay) — must not repeat
-   * the label (no "à récupérer en salon" under "Retrait en salon"). */
-  detail?: string;
   href?: string;
   onClick?: () => void;
   /** "sm" shrinks the card (and its label) on mobile only — for pairs whose label
@@ -18,7 +15,7 @@ type OptionCardProps = {
 };
 
 const base =
-  "flex flex-col items-center justify-center rounded-3xl border border-[var(--brand-color-1)] bg-white text-center transition hover:bg-[#f5f5f5]";
+  "flex flex-col items-center justify-center rounded-3xl border border-[var(--brand-color-1)] bg-white text-center transition hover:bg-[#f5f5f5] active:scale-[0.97] active:bg-[#f5f5f5]";
 
 const sizeClasses: Record<Size, string> = {
   default: "size-44 gap-4 px-4 sm:size-52",
@@ -37,11 +34,11 @@ const iconSizeClasses: Record<Size, string> = {
 
 /**
  * Large square, static (no tilt/hover-transform) — the picker pattern used
- * across the purchase flow's decision screens (Mode de livraison, Pour qui ?, ...).
+ * across the purchase flow's decision screens (Mode de réception, Pour qui ?, ...).
  * Icon on top, label at the bottom. Renders as a link when `href` is given,
  * otherwise a plain button (for options whose destination screen isn't built yet).
  */
-export function OptionCard({ icon: Icon, label, detail, size = "default", ...props }: OptionCardProps) {
+export function OptionCard({ icon: Icon, label, size = "default", ...props }: OptionCardProps) {
   const classes = cn(base, sizeClasses[size]);
   const content = (
     <>
@@ -53,7 +50,6 @@ export function OptionCard({ icon: Icon, label, detail, size = "default", ...pro
       <span className={cn(labelSizeClasses[size], "text-[var(--on-core-brand-color)] font-medium")}>
         {label}
       </span>
-      {detail && <span className="text-[var(--text-secondary)] text-base">{detail}</span>}
     </>
   );
 

@@ -3,7 +3,6 @@
 import { use, useEffect, useState } from "react";
 import { Gift } from "lucide-react";
 import Link from "next/link";
-import dynamic from "next/dynamic";
 import { BackLinkWithLogo } from "@/components/layout/back-link-with-logo";
 import { Button } from "@/components/ui/button";
 import { getCardsForEmail } from "@/lib/cards/persistence";
@@ -12,11 +11,6 @@ import { getRelationshipLabel } from "@/lib/cards/relationship";
 import { AVAILABILITY_LABELS, getCardAvailability } from "@/lib/cards/availability";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
-
-const WatercolorBackground = dynamic(
-  () => import("@/components/canvas/watercolor-background").then((m) => m.WatercolorBackground),
-  { ssr: false },
-);
 
 type PageProps = {
   searchParams: Promise<{ email?: string }>;
@@ -36,8 +30,6 @@ export default function MesCartesCadeauxListePage({ searchParams }: PageProps) {
 
   return (
     <section className="relative flex min-h-svh flex-col items-center justify-center gap-10 px-6 py-16">
-      <WatercolorBackground />
-
       <BackLinkWithLogo backHref="/" />
 
       <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">

@@ -18,10 +18,11 @@ export function BackLinkWithLogo({ backHref }: BackLinkWithLogoProps) {
     <div className="absolute inset-x-6 top-8 grid grid-cols-[1fr_auto_1fr] items-start gap-4">
       <Link
         href={backHref}
-        className="inline-flex items-center gap-2 text-[var(--text-secondary)] transition hover:opacity-70"
+        aria-label="Revenir en arrière"
+        className="inline-flex items-center gap-2 -m-2 p-2 text-[var(--text-secondary)] transition hover:opacity-70"
       >
-        <span aria-hidden>←</span>
-        Revenir en arrière
+        <span aria-hidden className="text-2xl sm:text-base">←</span>
+        <span aria-hidden className="hidden sm:inline">Revenir en arrière</span>
       </Link>
       <SiteLogo />
       <div aria-hidden />

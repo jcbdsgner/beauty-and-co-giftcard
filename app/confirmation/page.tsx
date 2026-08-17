@@ -2,15 +2,10 @@
 
 import { use } from "react";
 import { CheckCircle2, QrCode } from "lucide-react";
-import dynamic from "next/dynamic";
 import { SiteLogo } from "@/components/layout/site-logo";
 import { Button } from "@/components/ui/button";
 import { ReferenceBox } from "@/components/ui/reference-box";
-
-const WatercolorBackground = dynamic(
-  () => import("@/components/canvas/watercolor-background").then((m) => m.WatercolorBackground),
-  { ssr: false },
-);
+import { SALON_LABELS } from "@/lib/format";
 
 type Carried = Record<string, string | undefined>;
 
@@ -29,15 +24,18 @@ export default function ConfirmationPage({ searchParams }: PageProps) {
         : "Votre carte a été envoyée par email à l'instant.";
     }
     if (carried.mode === "retrait") {
-      return "Présentez ce code en salon pour récupérer votre carte cadeau.";
+      const salon = carried.salon ? SALON_LABELS[carried.salon] : undefined;
+      return salon
+        ? `Présentez ce code au salon ${salon} pour récupérer votre carte cadeau.`
+        : "Présentez ce code en salon pour récupérer votre carte cadeau.";
     }
-    return "Livraison estimée sous 3 à 5 jours ouvrés.";
+    return carried.envoi === "programme" && carried.envoi_date
+      ? `Votre carte sera expédiée le ${new Date(carried.envoi_date).toLocaleDateString("fr-FR")}, livraison estimée sous 3 à 5 jours ouvrés après expédition.`
+      : "Livraison estimée sous 3 à 5 jours ouvrés.";
   };
 
   return (
     <section className="relative flex min-h-svh flex-col items-center justify-center gap-8 px-6 py-16">
-      <WatercolorBackground />
-
       <div className="absolute inset-x-0 top-8 flex justify-center">
         <SiteLogo />
       </div>

@@ -139,8 +139,20 @@ function ShaderPlane() {
  * Fully generative watercolor wash — no source image. A single full-screen
  * fragment shader (simplex noise + domain-warped fbm) simulates ink
  * diffusing in water: slow, hypnotic, resolution-independent, with a paper
- * grain and a pointer-repel field. Mounted once as a fixed, negative-z-index
- * page background so it sits behind all page content regardless of scroll.
+ * grain and a pointer-repel field.
+ *
+ * Mounted exactly once, by app/layout.tsx via
+ * components/canvas/watercolor-background-client.tsx (the "use client"
+ * boundary `next/dynamic`'s `ssr: false` needs), above and outside
+ * components/ui/screen-transition.tsx's per-screen wrapper — so it never
+ * unmounts across navigations. It used to be mounted fresh by every page
+ * instead (then later portaled from there into a shared root): either way,
+ * that meant a brand new WebGL canvas on every navigation, and
+ * react-three-fiber's <Canvas> always paints its first frame at a default
+ * 300×150 before its resize observer catches up — a real, visible white
+ * flash around the edges for a frame or two on each screen change. A
+ * single persistent instance has nothing left to remount, so there's
+ * nothing left to flash.
  */
 export function WatercolorBackground() {
   return (

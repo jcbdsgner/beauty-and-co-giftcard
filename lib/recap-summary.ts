@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   CalendarClock,
   Gift,
+  MapPin,
   MessageCircle,
   PenLine,
   Send,
@@ -11,7 +12,7 @@ import {
   UserRound,
   Wallet,
 } from "lucide-react";
-import { MODE_LABELS, formatFcfa } from "@/lib/format";
+import { MODE_LABELS, SALON_LABELS, formatFcfa } from "@/lib/format";
 
 export type CarriedParams = Record<string, string | undefined>;
 
@@ -33,15 +34,20 @@ export function buildRecapLines(carried: CarriedParams): RecapLine[] {
   if (carried.mode) {
     lines.push({ icon: MODE_ICONS[carried.mode] ?? Truck, text: MODE_LABELS[carried.mode] ?? carried.mode });
   }
+  if (carried.mode === "retrait" && carried.salon) {
+    lines.push({ icon: MapPin, text: SALON_LABELS[carried.salon] ?? carried.salon });
+  }
   if (carried.amount) lines.push({ icon: Wallet, text: formatFcfa(carried.amount) });
-  if (carried.dest_nom) lines.push({ icon: Gift, text: `Pour ${carried.dest_nom}` });
+  const destFullName = [carried.dest_prenom, carried.dest_nom].filter(Boolean).join(" ");
+  if (destFullName) lines.push({ icon: Gift, text: `Pour ${destFullName}` });
   if (carried.message?.trim()) {
     const preview =
       carried.message.length > 28 ? `${carried.message.slice(0, 28)}…` : carried.message;
     lines.push({ icon: MessageCircle, text: `« ${preview} »` });
   }
   if (carried.signature?.trim()) lines.push({ icon: PenLine, text: `Signé ${carried.signature}` });
-  if (carried.buyer_nom) lines.push({ icon: UserRound, text: carried.buyer_nom });
+  const buyerFullName = [carried.buyer_prenom, carried.buyer_nom].filter(Boolean).join(" ");
+  if (buyerFullName) lines.push({ icon: UserRound, text: buyerFullName });
   if (carried.envoi === "programme" && carried.envoi_date) {
     lines.push({
       icon: CalendarClock,

@@ -63,7 +63,7 @@ export function TiltCard({ children, className }: TiltCardProps) {
       <div
         ref={surfaceRef}
         className={cn(
-          "relative overflow-hidden rounded-[2rem] border border-white/40 [transform-style:preserve-3d]",
+          "relative overflow-hidden rounded-[2rem] [transform-style:preserve-3d]",
           "shadow-[0_30px_60px_-15px_rgba(45,20,20,0.35)]",
           className,
         )}

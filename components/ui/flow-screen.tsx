@@ -7,6 +7,8 @@ type FlowScreenProps = {
   backHref: string;
   /** Omit on screens outside the purchase flow (Landing, Confirmation, "Mes cartes cadeaux") — see docs/userflow.md Conventions transverses. */
   carried?: CarriedParams;
+  /** Drops the title-centering padding/spacer in favor of a viewport-locked layout where content stretches to fill — for screens built around one large element (e.g. the 3D card preview) that must never need a scroll to reach its CTA. */
+  fillViewport?: boolean;
   children: React.ReactNode;
 };
 
@@ -38,27 +40,56 @@ type FlowScreenProps = {
  * centered content settles in the middle of the *leftover* region below —
  * which sits below true page-center, not at it. Mirroring the reserve
  * cancels that bias and puts content back at the actual viewport center.
+ *
+ * `fillViewport` skips all of that: there's no title to keep centered, so
+ * the badge reserve would just be dead space stolen from the one large
+ * element the screen is built around. There the recap badge is pulled out
+ * of the header row and absolutely positioned instead — the row shrinks to
+ * its own intrinsic content height (back link + logo, no badge-shaped
+ * floor), and the badge floats on top of whatever's below it. That floating
+ * badge is hidden below `sm`: the logo is independently centered in the
+ * same row, and on narrow viewports the two collide (the badge can grow up
+ * to ~200px tall and there's no room beside a centered ~86px logo). Both
+ * `fillViewport` screens (Aperçu de la carte, Récapitulatif) also show this
+ * same information in full in their own content, so nothing is lost by not
+ * floating a second copy over the header on small screens.
  */
-export function FlowScreen({ backHref, carried, children }: FlowScreenProps) {
+export function FlowScreen({ backHref, carried, fillViewport = false, children }: FlowScreenProps) {
   return (
-    <section className="relative flex min-h-svh flex-col px-6 py-8">
-      <div className="grid min-h-24 grid-cols-[1fr_auto_1fr] items-start gap-4 sm:min-h-52">
+    <section
+      className={`relative flex flex-col px-6 py-8 ${fillViewport ? "h-svh overflow-hidden" : "min-h-svh"}`}
+    >
+      <div
+        className={`grid grid-cols-[1fr_auto_1fr] items-start gap-4 ${fillViewport ? "" : "min-h-24 sm:min-h-52"}`}
+      >
         <Link
           href={backHref}
-          className="inline-flex items-center gap-2 text-[var(--text-secondary)] transition hover:opacity-70"
+          aria-label="Revenir en arrière"
+          className="inline-flex items-center gap-2 -m-2 p-2 text-[var(--text-secondary)] transition hover:opacity-70"
         >
-          <span aria-hidden>←</span>
-          Revenir en arrière
+          <span aria-hidden className="text-2xl sm:text-base">←</span>
+          <span aria-hidden className="hidden sm:inline">Revenir en arrière</span>
         </Link>
         <SiteLogo />
-        {carried && <RecapBadge carried={carried} />}
+        {!fillViewport && carried && <RecapBadge carried={carried} />}
       </div>
 
-      <div className="flex flex-1 flex-col items-center justify-center gap-10 py-10">
-        {children}
-      </div>
+      {fillViewport && carried && (
+        <div className="absolute top-8 right-6 z-20 hidden sm:block">
+          <RecapBadge carried={carried} />
+        </div>
+      )}
 
-      <div className="min-h-24 sm:min-h-52" aria-hidden />
+      {fillViewport ? (
+        <div className="flex min-h-0 flex-1 flex-col items-center gap-4 py-4">{children}</div>
+      ) : (
+        <>
+          <div className="flex flex-1 flex-col items-center justify-center gap-10 py-10">
+            {children}
+          </div>
+          <div className="min-h-24 sm:min-h-52" aria-hidden />
+        </>
+      )}
     </section>
   );
 }

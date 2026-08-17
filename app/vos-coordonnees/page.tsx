@@ -2,16 +2,10 @@
 
 import { use, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
 import { Button } from "@/components/ui/button";
 import { TextField } from "@/components/ui/text-field";
 import { FlowScreen } from "@/components/ui/flow-screen";
 import { buildQuery } from "@/lib/flow-params";
-
-const WatercolorBackground = dynamic(
-  () => import("@/components/canvas/watercolor-background").then((m) => m.WatercolorBackground),
-  { ssr: false },
-);
 
 type PageProps = {
   searchParams: Promise<Record<string, string | undefined>>;
@@ -20,11 +14,14 @@ type PageProps = {
 export default function VosCoordonneesPage({ searchParams }: PageProps) {
   const carried = use(searchParams);
   const router = useRouter();
+  const [prenom, setPrenom] = useState(carried.buyer_prenom ?? "");
   const [nom, setNom] = useState(carried.buyer_nom ?? "");
+  const [telephone, setTelephone] = useState(carried.buyer_telephone ?? "");
   const [email, setEmail] = useState(carried.buyer_email ?? "");
 
   const isForSomeoneElse = carried.pour !== "moi";
-  const isValid = nom.trim() !== "" && email.trim() !== "";
+  const isValid =
+    prenom.trim() !== "" && nom.trim() !== "" && telephone.trim() !== "" && email.trim() !== "";
 
   const backHref = isForSomeoneElse
     ? `/message${buildQuery(carried)}`
@@ -34,37 +31,57 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
     event.preventDefault();
     if (!isValid) return;
 
-    const next = { ...carried, buyer_nom: nom, buyer_email: email };
+    const next = { ...carried, buyer_prenom: prenom, buyer_nom: nom, buyer_telephone: telephone, buyer_email: email };
 
     if (carried.from === "recap") {
       router.push(`/recapitulatif${buildQuery({ ...next, from: undefined })}`);
     } else if (isForSomeoneElse) {
       router.push(`/signature${buildQuery(next)}`);
-    } else if (carried.mode === "numerique") {
+    } else if (carried.mode === "postal") {
+      // Buying for yourself with postal delivery still needs a delivery
+      // address — the same screen the "for someone else" branch uses,
+      // just re-entered from here instead of from Destinataire.
+      router.push(`/adresse-livraison${buildQuery(next)}`);
+    } else if (carried.mode !== "retrait") {
       router.push(`/quand-envoyer${buildQuery(next)}`);
     } else {
-      router.push(`/recapitulatif${buildQuery({ ...next, from: undefined })}`);
+      router.push(`/apercu-carte${buildQuery(next)}`);
     }
   };
 
   return (
-    <>
-      <WatercolorBackground />
-      <FlowScreen backHref={backHref} carried={carried}>
-        <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
-          Vos coordonnées
-        </h1>
+    <FlowScreen backHref={backHref} carried={carried}>
+      <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
+        Vos coordonnées
+      </h1>
 
-        <form
-          onSubmit={handleSubmit}
-          className="flex w-[min(90vw,28rem)] flex-col items-center gap-4"
-        >
+      <form
+        onSubmit={handleSubmit}
+        className="flex w-[min(90vw,34rem)] flex-col items-center gap-4"
+      >
+        <div className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2">
+          <TextField
+            type="text"
+            value={prenom}
+            onChange={(event) => setPrenom(event.target.value)}
+            placeholder="Prénom"
+            aria-label="Votre prénom"
+          />
           <TextField
             type="text"
             value={nom}
             onChange={(event) => setNom(event.target.value)}
-            placeholder="Nom complet"
-            aria-label="Votre nom complet"
+            placeholder="Nom"
+            aria-label="Votre nom"
+          />
+          <TextField
+            type="tel"
+            prefix="+221"
+            value={telephone}
+            onChange={(event) => setTelephone(event.target.value)}
+            placeholder="Téléphone"
+            aria-label="Votre téléphone"
+            className="sm:col-span-2"
           />
           <TextField
             type="email"
@@ -72,13 +89,14 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
             onChange={(event) => setEmail(event.target.value)}
             placeholder="Email"
             aria-label="Votre email"
+            className="sm:col-span-2"
           />
+        </div>
 
-          <Button type="submit" size="lg" disabled={!isValid} className="w-full">
-            Continuer
-          </Button>
-        </form>
-      </FlowScreen>
-    </>
+        <Button type="submit" size="lg" disabled={!isValid} className="w-full">
+          Continuer
+        </Button>
+      </form>
+    </FlowScreen>
   );
 }

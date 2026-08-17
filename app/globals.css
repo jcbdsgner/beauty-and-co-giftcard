@@ -81,7 +81,22 @@ body {
   animation: card-float 6s ease-in-out infinite;
 }
 
-@keyframes page-fade-in {
+/* Screen-to-screen fade (components/ui/screen-transition.tsx). Pure
+   opacity, no blur, sequential: the outgoing screen fades fully out
+   (150ms), then the incoming one fades in (150ms) — 300ms total. Never
+   applied to the watercolor background, which is portaled out to a
+   persistent root above this wrapper — see
+   components/canvas/watercolor-background.tsx — so there's nothing behind
+   the faded-out content to flash white. */
+@keyframes screen-content-exit {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+@keyframes screen-content-enter {
   from {
     opacity: 0;
   }
@@ -89,6 +104,40 @@ body {
     opacity: 1;
   }
 }
-.animate-page-fade-in {
-  animation: page-fade-in 0.35s ease-out both;
+.animate-screen-exit {
+  animation: screen-content-exit 150ms ease-in both;
+}
+.animate-screen-enter {
+  animation: screen-content-enter 150ms ease-out both;
+}
+
+/* Mobile recap panel (components/ui/recap-badge.tsx): same 150ms timing as
+   the screen transition above, for one consistent motion vocabulary, plus a
+   small scale so a floating/dismissible panel reads differently from a
+   full-page fade. */
+@keyframes recap-panel-enter {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+@keyframes recap-panel-exit {
+  from {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
+}
+.animate-recap-panel-enter {
+  animation: recap-panel-enter 150ms ease-out both;
+}
+.animate-recap-panel-exit {
+  animation: recap-panel-exit 120ms ease-in both;
 }
