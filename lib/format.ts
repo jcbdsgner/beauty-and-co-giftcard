@@ -12,6 +12,6 @@ export const SALON_LABELS: Record<string, string> = {
 export function formatFcfa(amount: number | string | undefined): string {
   const value = typeof amount === "string" ? Number(amount) : amount;
   return value !== undefined && Number.isFinite(value)
-    ? `${value.toLocaleString("de-DE")} FCFA`
+    ? `${value.toLocaleString("fr-FR")} FCFA`
     : "—";
 }

@@ -34,6 +34,8 @@ export type GiftCard = {
   mode: DeliveryMode;
   amount: number;
   balance: number;
+  /** Set when this card is a service pack rather than a monetary amount — see `lib/packs`. */
+  packId?: string;
   status: CardStatus;
   buyerName: string;
   buyerEmail: string;
@@ -45,4 +47,6 @@ export type GiftCard = {
   message?: string;
   signature?: string;
   createdAt: string;
+  /** 6 months out from whichever is most recent — the purchase, or the last recharge. */
+  expiresAt: string;
 };

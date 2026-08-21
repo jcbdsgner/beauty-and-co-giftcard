@@ -62,7 +62,7 @@ export default function AdresseLivraisonPage({ searchParams }: PageProps) {
           aria-label="Quartier de livraison"
         >
           <option value="" disabled>
-            Quartier de livraison
+            Quartier de livraison *
           </option>
           <optgroup label="Dakar">
             {DAKAR_QUARTIERS.map((q) => (
@@ -81,7 +81,7 @@ export default function AdresseLivraisonPage({ searchParams }: PageProps) {
         <TextAreaField
           value={adresse}
           onChange={(event) => setAdresse(event.target.value)}
-          placeholder="Adresse complète (rue, bâtiment, étage, digicode...)"
+          placeholder="Adresse complète (rue, bâtiment, étage, digicode...) *"
           aria-label="Adresse de livraison complète"
           rows={3}
         />

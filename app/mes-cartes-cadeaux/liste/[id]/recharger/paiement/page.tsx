@@ -1,47 +1,46 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { CreditCard, Lock, Smartphone } from "lucide-react";
+import { BackLinkWithLogo } from "@/components/layout/back-link-with-logo";
 import { Button } from "@/components/ui/button";
-import { FlowScreen } from "@/components/ui/flow-screen";
-import { OrderExpired } from "@/components/ui/order-expired";
-import { buildQuery } from "@/lib/flow-params";
+import { getCardById, topUpCard } from "@/lib/cards/persistence";
+import { canTopUp } from "@/lib/cards/availability";
+import type { GiftCard } from "@/lib/cards/types";
 import { formatFcfa } from "@/lib/format";
-import { getTotalDue } from "@/lib/delivery";
-import { isOrderComplete, randomReference } from "@/lib/order";
-import { addMonths, saveCard } from "@/lib/cards/persistence";
-import type { CardStatus, DeliveryMode } from "@/lib/cards/types";
-
-type Carried = Record<string, string | undefined>;
+import { buildQuery } from "@/lib/flow-params";
 
 type PageProps = {
-  searchParams: Promise<Carried>;
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ email?: string; montant?: string }>;
 };
 
-function initialStatus(mode: string | undefined, envoi: string | undefined): CardStatus {
-  if (mode === "retrait") return "pret_retrait";
-  if (envoi === "programme") return "programmee";
-  return mode === "numerique" ? "envoyee" : "expediee";
-}
-
-export default function PaiementPage({ searchParams }: PageProps) {
-  const carried = use(searchParams);
+export default function RechargerPaiementPage({ params, searchParams }: PageProps) {
+  const { id } = use(params);
+  const { email, montant } = use(searchParams);
   const router = useRouter();
+  const [card, setCard] = useState<GiftCard | null | undefined>(undefined);
   const [simulateFailure, setSimulateFailure] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState(false);
 
-  const totalDue = getTotalDue(carried.amount, carried.mode);
-  const orderComplete = isOrderComplete(carried);
+  useEffect(() => {
+    const load = () => setCard(getCardById(id) ?? null);
+    load();
+  }, [id]);
+
+  const backHref = `/mes-cartes-cadeaux/liste/${id}/recharger${buildQuery({ email })}`;
+  const rechargeAmount = Number(montant);
+  const orderComplete = card != null && canTopUp(card) && Number.isFinite(rechargeAmount) && rechargeAmount > 0;
 
   const handlePay = async () => {
     if (!orderComplete) return;
     setError(false);
     setIsProcessing(true);
-    // Simulated processing delay — no real payment provider wired yet (see
-    // docs/userflow.md decision #3 / #10, Stripe is the intended target later).
+    // Simulated processing delay, matching /paiement — no real payment
+    // provider wired yet (see docs/userflow.md decision #3 / #10).
     await new Promise((resolve) => setTimeout(resolve, 700));
     setIsProcessing(false);
 
@@ -50,59 +49,35 @@ export default function PaiementPage({ searchParams }: PageProps) {
       return;
     }
 
-    // Reuse the code already minted (and shown as a barcode) on the 3D
-    // preview screen, so the card the customer saw matches what they get —
-    // only falls back to a fresh one if this order skipped that screen.
-    const reference = carried.code ?? randomReference();
-    const amount = Number(carried.amount);
-    if (carried.buyer_email && Number.isFinite(amount)) {
-      const now = new Date().toISOString();
-      saveCard({
-        id: reference,
-        reference,
-        mode: (carried.mode as DeliveryMode | undefined) ?? "numerique",
-        amount,
-        balance: amount,
-        packId: carried.pack,
-        status: initialStatus(carried.mode, carried.envoi),
-        buyerName: [carried.buyer_prenom, carried.buyer_nom].filter(Boolean).join(" "),
-        buyerEmail: carried.buyer_email,
-        destName: [carried.dest_prenom, carried.dest_nom].filter(Boolean).join(" ") || undefined,
-        destEmail: carried.dest_email,
-        destPhone: carried.dest_telephone,
-        destAddress: carried.dest_adresse,
-        destQuartier: carried.dest_quartier,
-        message: carried.message,
-        signature: carried.signature || undefined,
-        createdAt: now,
-        expiresAt: addMonths(now, 6),
-      });
-    }
-
-    router.push(`/confirmation${buildQuery({ ...carried, ref: reference })}`);
+    topUpCard(id, rechargeAmount);
+    router.push(`/mes-cartes-cadeaux/liste/${id}${buildQuery({ email, recharge: "ok" })}`);
   };
+
+  if (card === undefined) return null;
 
   if (!orderComplete) {
     return (
-      <FlowScreen backHref="/pour-qui">
-        <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
-          Paiement
-        </h1>
-        <OrderExpired />
-      </FlowScreen>
+      <section className="relative flex min-h-svh flex-col items-center justify-center gap-6 px-6 py-16 text-center">
+        <BackLinkWithLogo backHref={backHref} />
+        <p className="mt-24 text-[var(--text-secondary)]">
+          {card === null ? "Carte introuvable." : "Montant de recharge invalide."}
+        </p>
+      </section>
     );
   }
 
   return (
-    <FlowScreen backHref={`/recapitulatif${buildQuery(carried)}`} carried={carried}>
+    <section className="relative flex min-h-svh flex-col items-center justify-center gap-10 px-6 py-16">
+      <BackLinkWithLogo backHref={backHref} />
+
       <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
         Paiement
       </h1>
 
       <div className="flex w-[min(90vw,26rem)] flex-col items-center gap-6 rounded-3xl border border-[var(--brand-color-1)] bg-white px-8 py-10 text-center">
-        <p className="text-[var(--text-secondary)]">Montant à payer</p>
+        <p className="text-[var(--text-secondary)]">Montant de la recharge</p>
         <p className="font-heading text-4xl text-[var(--on-core-brand-color)]">
-          {formatFcfa(totalDue)}
+          {formatFcfa(rechargeAmount)}
         </p>
 
         {error && (
@@ -158,6 +133,6 @@ export default function PaiementPage({ searchParams }: PageProps) {
         />
         Simuler un échec de paiement (démo)
       </label>
-    </FlowScreen>
+    </section>
   );
 }

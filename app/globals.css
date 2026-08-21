@@ -141,3 +141,28 @@ body {
 .animate-recap-panel-exit {
   animation: recap-panel-exit 120ms ease-in both;
 }
+
+/* Intro gate CTA (components/sections/intro-gate.tsx): the "click/swipe to
+   open" prompt is underlined, and it's that underline — not the text — that
+   animates: it grows to the text's full width, then retracts back, looping.
+   Grows from the center on mobile (matching the centered CTA layout there),
+   from the left from sm up (matching the left-aligned layout). Skipped
+   entirely when the visitor prefers reduced motion. */
+@keyframes gate-underline {
+  0%,
+  100% {
+    transform: scaleX(0);
+  }
+  50% {
+    transform: scaleX(1);
+  }
+}
+.animate-gate-underline {
+  transform-origin: center;
+  animation: gate-underline 3.4s ease-in-out infinite;
+}
+@media (min-width: 640px) {
+  .animate-gate-underline {
+    transform-origin: left;
+  }
+}

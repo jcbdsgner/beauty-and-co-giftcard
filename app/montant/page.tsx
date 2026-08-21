@@ -17,14 +17,13 @@ type MontantPageProps = {
 export default function MontantPage({ searchParams }: MontantPageProps) {
   const carried = use(searchParams);
   const nextHref = (amount: number) => {
-    const next = { ...carried, amount: String(amount) };
-    return carried.from === "recap"
-      ? `/recapitulatif${buildQuery({ ...next, from: undefined })}`
-      : `/pour-qui${buildQuery(next)}`;
+    const next = { ...carried, amount: String(amount), type: "montant", pack: undefined };
+    if (carried.from === "recap") return `/recapitulatif${buildQuery({ ...next, from: undefined })}`;
+    return `/mode-de-livraison${buildQuery(next)}`;
   };
 
   return (
-    <FlowScreen backHref={`/mode-de-livraison${buildQuery(carried)}`} carried={carried}>
+    <FlowScreen backHref={`/type-cadeau${buildQuery(carried)}`} carried={carried}>
       <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
         Montant
       </h1>
@@ -32,16 +31,15 @@ export default function MontantPage({ searchParams }: MontantPageProps) {
       <div className="flex flex-wrap items-center justify-center gap-6">
         {PRESET_AMOUNTS.map((amount) => (
           <Link key={amount} href={nextHref(amount)} className={blockClasses}>
-            <span className="text-2xl text-[var(--on-core-brand-color)] sm:text-3xl">
-              {amount.toLocaleString("de-DE")}
+            <span className="text-2xl font-semibold text-[var(--on-core-brand-color)] sm:text-3xl">
+              {amount.toLocaleString("fr-FR")}
             </span>
             <span className="text-[var(--text-secondary)] text-base">FCFA</span>
           </Link>
         ))}
 
         <Link href={`/montant/personnalise${buildQuery(carried)}`} className={blockClasses}>
-          <span className="text-2xl text-[var(--on-core-brand-color)] sm:text-3xl">Autre</span>
-          <span className="text-[var(--text-secondary)] text-base">Montant libre</span>
+          <span className="text-lg font-semibold text-[var(--on-core-brand-color)] uppercase sm:text-2xl">Montant personnalisé</span>
         </Link>
       </div>
     </FlowScreen>

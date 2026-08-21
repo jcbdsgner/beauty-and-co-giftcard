@@ -18,6 +18,7 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
   const [nom, setNom] = useState(carried.buyer_nom ?? "");
   const [telephone, setTelephone] = useState(carried.buyer_telephone ?? "");
   const [email, setEmail] = useState(carried.buyer_email ?? "");
+  const [hideIdentity, setHideIdentity] = useState(carried.buyer_confidentiel === "1");
 
   const isForSomeoneElse = carried.pour !== "moi";
   const isValid =
@@ -25,13 +26,20 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
 
   const backHref = isForSomeoneElse
     ? `/message${buildQuery(carried)}`
-    : `/pour-qui${buildQuery({ mode: carried.mode, amount: carried.amount })}`;
+    : `${carried.mode === "retrait" ? "/choix-salon" : "/mode-de-livraison"}${buildQuery(carried)}`;
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isValid) return;
 
-    const next = { ...carried, buyer_prenom: prenom, buyer_nom: nom, buyer_telephone: telephone, buyer_email: email };
+    const next = {
+      ...carried,
+      buyer_prenom: prenom,
+      buyer_nom: nom,
+      buyer_telephone: telephone,
+      buyer_email: email,
+      buyer_confidentiel: hideIdentity ? "1" : "0",
+    };
 
     if (carried.from === "recap") {
       router.push(`/recapitulatif${buildQuery({ ...next, from: undefined })}`);
@@ -64,14 +72,14 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
             type="text"
             value={prenom}
             onChange={(event) => setPrenom(event.target.value)}
-            placeholder="Prénom"
+            placeholder="Prénom *"
             aria-label="Votre prénom"
           />
           <TextField
             type="text"
             value={nom}
             onChange={(event) => setNom(event.target.value)}
-            placeholder="Nom"
+            placeholder="Nom *"
             aria-label="Votre nom"
           />
           <TextField
@@ -79,7 +87,7 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
             prefix="+221"
             value={telephone}
             onChange={(event) => setTelephone(event.target.value)}
-            placeholder="Téléphone"
+            placeholder="Téléphone *"
             aria-label="Votre téléphone"
             className="sm:col-span-2"
           />
@@ -87,11 +95,23 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
             type="email"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
-            placeholder="Email"
+            placeholder="Email *"
             aria-label="Votre email"
             className="sm:col-span-2"
           />
         </div>
+
+        {isForSomeoneElse && (
+          <label className="text-[var(--text-secondary)] flex w-full items-start gap-2 px-1 text-sm">
+            <input
+              type="checkbox"
+              checked={hideIdentity}
+              onChange={(event) => setHideIdentity(event.target.checked)}
+              className="mt-0.5 accent-[var(--core-brand-color)]"
+            />
+            Garder mes coordonnées confidentielles (non visibles par le destinataire)
+          </label>
+        )}
 
         <Button type="submit" size="lg" disabled={!isValid} className="w-full">
           Continuer

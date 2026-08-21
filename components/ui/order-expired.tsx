@@ -19,7 +19,7 @@ export function OrderExpired() {
           composition de votre carte cadeau.
         </p>
       </div>
-      <Button href="/mode-de-livraison" size="lg" className="w-full">
+      <Button href="/pour-qui" size="lg" className="w-full">
         Recommencer
       </Button>
     </div>

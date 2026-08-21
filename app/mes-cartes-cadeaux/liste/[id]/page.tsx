@@ -2,17 +2,24 @@
 
 import { use, useEffect, useState } from "react";
 import { BackLinkWithLogo } from "@/components/layout/back-link-with-logo";
+import { Button } from "@/components/ui/button";
 import { ReferenceBox } from "@/components/ui/reference-box";
 import { getCardById } from "@/lib/cards/persistence";
 import type { GiftCard } from "@/lib/cards/types";
 import { getRelationshipLabel } from "@/lib/cards/relationship";
-import { AVAILABILITY_LABELS, AVAILABILITY_TEXT_CLASSES, getCardAvailability } from "@/lib/cards/availability";
+import {
+  AVAILABILITY_LABELS,
+  AVAILABILITY_TEXT_CLASSES,
+  canTopUp,
+  getCardAvailability,
+} from "@/lib/cards/availability";
+import { getPackById } from "@/lib/packs";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
 
 type PageProps = {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ email?: string }>;
+  searchParams: Promise<{ email?: string; recharge?: string }>;
 };
 
 function Row({ label, value }: { label: string; value: string }) {
@@ -26,7 +33,7 @@ function Row({ label, value }: { label: string; value: string }) {
 
 export default function CarteDetailPage({ params, searchParams }: PageProps) {
   const { id } = use(params);
-  const { email } = use(searchParams);
+  const { email, recharge } = use(searchParams);
   // Same client-only read pattern as the list page — localStorage doesn't
   // exist during the server render, so we resolve the card after mount.
   const [card, setCard] = useState<GiftCard | null | undefined>(undefined);
@@ -52,10 +59,18 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
   const relationshipLabel = email ? getRelationshipLabel(card, email) : null;
   const progressPct = card.amount > 0 ? Math.round((card.balance / card.amount) * 100) : 0;
   const availability = getCardAvailability(card);
+  const rechargeHref = `/mes-cartes-cadeaux/liste/${card.id}/recharger${buildQuery({ email })}`;
+  const pack = getPackById(card.packId);
 
   return (
     <section className="relative flex min-h-svh flex-col items-center gap-8 px-6 pt-28 pb-16">
       <BackLinkWithLogo backHref={backHref} />
+
+      {recharge === "ok" && (
+        <p className="w-[min(92vw,34rem)] rounded-2xl bg-[#f0f9f0] px-4 py-3 text-center text-base text-green-700">
+          Carte rechargée avec succès.
+        </p>
+      )}
 
       <div className="flex w-full max-w-4xl flex-col items-center gap-6 lg:flex-row lg:items-start lg:justify-center lg:gap-8">
         <div className="flex w-[min(92vw,26rem)] flex-col gap-6 lg:w-[26rem] lg:shrink-0">
@@ -74,22 +89,53 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
         </div>
 
         <div className="flex w-[min(92vw,30rem)] flex-col gap-6 rounded-3xl border border-[var(--brand-color-1)] bg-white px-8 py-8 lg:w-auto lg:flex-1">
-          <div className="flex flex-col items-center gap-2 text-center">
-            <span className="font-heading text-4xl text-[var(--on-core-brand-color)]">
-              {formatFcfa(card.balance)}
-            </span>
-            {card.balance !== card.amount && (
-              <span className="text-[var(--text-secondary)] text-base">
-                sur {formatFcfa(card.amount)} au départ
+          {pack ? (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <span className="font-heading text-2xl text-[var(--on-core-brand-color)] sm:text-3xl">
+                {pack.label}
               </span>
-            )}
-            <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#f5f5f5]">
-              <div
-                className="h-full rounded-full bg-[var(--core-brand-color)]"
-                style={{ width: `${progressPct}%` }}
-              />
+              <span className="text-[var(--text-secondary)] text-base">{pack.description}</span>
+              <ul className="mt-2 flex w-full flex-col gap-1.5 text-left">
+                {pack.items.map((item) => (
+                  <li
+                    key={item.label}
+                    className="flex items-start justify-between gap-3 text-sm text-[var(--on-core-brand-color)]"
+                  >
+                    <span className="flex items-start gap-2">
+                      <span className="mt-[7px] size-1.5 shrink-0 rounded-full bg-[var(--button-2-color)]" />
+                      {item.label}
+                    </span>
+                    <span className="shrink-0 text-[var(--text-secondary)]">{item.duration}</span>
+                  </li>
+                ))}
+              </ul>
+              <span className="mt-2 font-heading text-2xl text-[var(--on-core-brand-color)]">
+                {formatFcfa(pack.price)}
+              </span>
             </div>
-          </div>
+          ) : (
+            <div className="flex flex-col items-center gap-2 text-center">
+              <span className="font-heading text-4xl text-[var(--on-core-brand-color)]">
+                {formatFcfa(card.balance)}
+              </span>
+              {card.balance !== card.amount && (
+                <span className="text-[var(--text-secondary)] text-base">
+                  sur {formatFcfa(card.amount)} au départ
+                </span>
+              )}
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-[#f5f5f5]">
+                <div
+                  className="h-full rounded-full bg-[var(--core-brand-color)]"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+              {canTopUp(card) && (
+                <Button href={rechargeHref} variant="brand" className="mt-2 w-full">
+                  Recharger la carte
+                </Button>
+              )}
+            </div>
+          )}
 
           <dl className="flex flex-col gap-4 border-t border-[var(--brand-color-1)] pt-6">
             <Row label="Mode de réception" value={MODE_LABELS[card.mode] ?? card.mode} />
@@ -99,7 +145,7 @@ export default function CarteDetailPage({ params, searchParams }: PageProps) {
             {card.destEmail && <Row label="Email" value={card.destEmail} />}
             {card.signature && <Row label="Signé" value={card.signature} />}
             {card.message?.trim() && <Row label="Message" value={`« ${card.message} »`} />}
-            <Row label="Date d'achat" value={new Date(card.createdAt).toLocaleDateString("fr-FR")} />
+            <Row label="Date d'expiration" value={new Date(card.expiresAt).toLocaleDateString("fr-FR")} />
           </dl>
         </div>
       </div>

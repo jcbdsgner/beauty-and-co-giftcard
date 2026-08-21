@@ -9,6 +9,8 @@ type FlowScreenProps = {
   carried?: CarriedParams;
   /** Drops the title-centering padding/spacer in favor of a viewport-locked layout where content stretches to fill — for screens built around one large element (e.g. the 3D card preview) that must never need a scroll to reach its CTA. */
   fillViewport?: boolean;
+  /** When false, the header row (back link, logo, badge) stays translated up off-screen and hidden, instead of appearing immediately — for a screen that wants to hold its chrome back until some intro animation of its own finishes, then reveal it in sync. Defaults to true so every other screen is unaffected. */
+  revealed?: boolean;
   children: React.ReactNode;
 };
 
@@ -54,13 +56,21 @@ type FlowScreenProps = {
  * same information in full in their own content, so nothing is lost by not
  * floating a second copy over the header on small screens.
  */
-export function FlowScreen({ backHref, carried, fillViewport = false, children }: FlowScreenProps) {
+export function FlowScreen({ backHref, carried, fillViewport = false, revealed = true, children }: FlowScreenProps) {
+  // "translate", not "transform" — Tailwind v4's translate-y-* utilities set
+  // the native CSS `translate` property, not `transform`; transitioning the
+  // wrong property left opacity animating smoothly while the Y position
+  // snapped to its final value instantly.
+  const revealClass = `transition-[translate,opacity] duration-700 ease-in-out delay-150 ${
+    revealed ? "translate-y-0 opacity-100" : "-translate-y-8 opacity-0 pointer-events-none"
+  }`;
+
   return (
     <section
       className={`relative flex flex-col px-6 py-8 ${fillViewport ? "h-svh overflow-hidden" : "min-h-svh"}`}
     >
       <div
-        className={`grid grid-cols-[1fr_auto_1fr] items-start gap-4 ${fillViewport ? "" : "min-h-24 sm:min-h-52"}`}
+        className={`grid grid-cols-[1fr_auto_1fr] items-start gap-4 ${revealClass} ${fillViewport ? "" : "min-h-24 sm:min-h-52"}`}
       >
         <Link
           href={backHref}
@@ -75,7 +85,7 @@ export function FlowScreen({ backHref, carried, fillViewport = false, children }
       </div>
 
       {fillViewport && carried && (
-        <div className="absolute top-8 right-6 z-20 hidden sm:block">
+        <div className={`absolute top-8 right-6 z-20 hidden sm:block ${revealClass}`}>
           <RecapBadge carried={carried} />
         </div>
       )}

@@ -9,9 +9,12 @@ import { usePathname, useRouter } from "next/navigation";
  * flow, where leaving loses unsaved progress (decision #1: no resume). Kept as prefixes so
  * nested steps (e.g. /montant/personnalise, /signature/alias) match too. */
 const PURCHASE_FLOW_PREFIXES = [
-  "/mode-de-livraison",
-  "/montant",
   "/pour-qui",
+  "/mode-de-livraison",
+  "/choix-salon",
+  "/type-cadeau",
+  "/montant",
+  "/packs",
   "/coordonnees-destinataire",
   "/message",
   "/vos-coordonnees",
@@ -26,7 +29,15 @@ const PURCHASE_FLOW_PREFIXES = [
  * shares the same top edge as the back link and recap badge next to it. Mid-purchase, leaving
  * loses unsaved progress, so it asks for confirmation first instead of navigating right away —
  * styled after the permanent recap badge (frosted white panel) rather than a heavy dimmed modal. */
-export function SiteLogo() {
+type SiteLogoProps = {
+  /** Overrides the default logo size classes (height/min-width). Used by the Hero to render a
+   * larger logo without affecting the shared size used on every other screen. */
+  sizeClassName?: string;
+};
+
+const DEFAULT_SIZE_CLASSNAME = "h-[46px] w-auto min-w-[99px] sm:h-16 sm:min-w-[139px]";
+
+export function SiteLogo({ sizeClassName = DEFAULT_SIZE_CLASSNAME }: SiteLogoProps = {}) {
   const pathname = usePathname();
   const router = useRouter();
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -81,7 +92,7 @@ export function SiteLogo() {
             width={110}
             height={51}
             priority
-            className="h-10 w-auto min-w-[86px] sm:h-14 sm:min-w-[121px]"
+            className={sizeClassName}
           />
         </button>
       ) : (
@@ -92,7 +103,7 @@ export function SiteLogo() {
             width={110}
             height={51}
             priority
-            className="h-10 w-auto min-w-[86px] sm:h-14 sm:min-w-[121px]"
+            className={sizeClassName}
           />
         </Link>
       )}

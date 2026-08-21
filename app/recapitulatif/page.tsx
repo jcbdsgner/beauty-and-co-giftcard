@@ -9,6 +9,7 @@ import { buildQuery } from "@/lib/flow-params";
 import { MODE_LABELS, SALON_LABELS, formatFcfa } from "@/lib/format";
 import { getDeliveryFee, getTotalDue } from "@/lib/delivery";
 import { isOrderComplete } from "@/lib/order";
+import { getPackById } from "@/lib/packs";
 
 type Carried = Record<string, string | undefined>;
 
@@ -16,7 +17,7 @@ type PageProps = {
   searchParams: Promise<Carried>;
 };
 
-type Row = { label: string; value: string; editHref?: string; emphasis?: boolean };
+type Row = { label: string; value: string; editHref?: string; emphasis?: boolean; note?: string };
 
 export default function RecapitulatifPage({ searchParams }: PageProps) {
   const carried = use(searchParams);
@@ -39,6 +40,19 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
     {
       label: "Vos coordonnées",
       value: [buyerFullName, carried.buyer_telephone, carried.buyer_email].filter(Boolean).join(" · ") || "—",
+      note:
+        carried.buyer_confidentiel === "1"
+          ? "Confidentielles — non communiquées au destinataire"
+          : undefined,
+    },
+    {
+      label: "Pour qui ?",
+      value: isForSomeoneElse ? "Pour offrir" : "Pour moi-même",
+      // Not editQuery()/from=recap — switching this answer changes which
+      // downstream fields are required (Destinataire vs. buyer-only), so
+      // unlike the other rows this has to walk the flow forward again
+      // instead of shortcutting straight back to Récapitulatif.
+      editHref: `/pour-qui${buildQuery(carried)}`,
     },
     {
       label: "Mode de réception",
@@ -100,13 +114,24 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
   }
 
   // Everything financial sits together at the end of the block, in reading
-  // order (Montant → Frais de livraison → Total à payer) — grouped instead
-  // of interleaved with the rest so the eye can total them in one pass right
-  // before "Payer".
-  rows.push({
-    label: "Montant",
-    value: formatFcfa(carried.amount),
-  });
+  // order (Montant/Pack → Frais de livraison → Total à payer) — grouped
+  // instead of interleaved with the rest so the eye can total them in one
+  // pass right before "Payer".
+  const pack = getPackById(carried.pack);
+  if (pack) {
+    rows.push({
+      label: "Pack de services",
+      value: pack.label,
+      note: pack.items.map((item) => item.label).join(" · "),
+      editHref: `/packs${editQuery()}`,
+    });
+  } else {
+    rows.push({
+      label: "Montant",
+      value: formatFcfa(carried.amount),
+      editHref: `/montant${editQuery()}`,
+    });
+  }
 
   if (isPostal) {
     rows.push({
@@ -125,7 +150,7 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
 
   if (!isOrderComplete(carried)) {
     return (
-      <FlowScreen backHref="/mode-de-livraison">
+      <FlowScreen backHref="/pour-qui">
         <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
           Récapitulatif
         </h1>
@@ -139,6 +164,10 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
       <h1 className="shrink-0 font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
         Récapitulatif
       </h1>
+
+      <p className="shrink-0 text-center text-[15px] text-[var(--text-secondary)]">
+        Vos informations sont confidentielles et ne seront utilisées que pour cette commande.
+      </p>
 
       {/* Hugs the title instead of centering in the leftover space — a short recap
           (few optional rows) used to float in the vertical middle of the gap between
@@ -169,12 +198,15 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
                   <span
                     className={
                       row.emphasis
-                        ? "font-sans text-xl font-semibold text-[var(--on-core-brand-color)]"
-                        : "text-[var(--on-core-brand-color)] font-medium"
+                        ? "font-sans text-xl font-bold text-[var(--on-core-brand-color)]"
+                        : "text-[var(--on-core-brand-color)] font-bold"
                     }
                   >
                     {row.value}
                   </span>
+                  {row.note && (
+                    <span className="text-[var(--text-secondary)] text-sm italic">{row.note}</span>
+                  )}
                 </div>
                 {row.editHref && (
                   <Link

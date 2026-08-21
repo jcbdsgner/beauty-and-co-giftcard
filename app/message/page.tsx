@@ -46,7 +46,7 @@ export default function MessagePage({ searchParams }: PageProps) {
         <TextAreaField
           value={message}
           onChange={(event) => setMessage(event.target.value.slice(0, MAX_LENGTH))}
-          placeholder="Écrivez un petit mot..."
+          placeholder="Écrivez un petit mot qui s'affichera sur la carte..."
           aria-label="Message pour le destinataire"
           rows={5}
         />

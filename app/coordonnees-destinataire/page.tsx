@@ -13,7 +13,7 @@ type PageProps = {
 
 export default function CoordonneesDestinatairePage({ searchParams }: PageProps) {
   const carried = use(searchParams);
-  const { mode, amount } = carried;
+  const { mode } = carried;
   const router = useRouter();
 
   const [prenom, setPrenom] = useState(carried.dest_prenom ?? "");
@@ -36,11 +36,18 @@ export default function CoordonneesDestinatairePage({ searchParams }: PageProps)
     router.push(isPostal ? `/adresse-livraison${buildQuery(next)}` : `/message${buildQuery(next)}`);
   };
 
+  const backHref = mode === "retrait" ? "/choix-salon" : "/mode-de-livraison";
+
   return (
-    <FlowScreen backHref={`/pour-qui${buildQuery({ mode, amount })}`} carried={carried}>
-      <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
-        Destinataire
-      </h1>
+    <FlowScreen backHref={`${backHref}${buildQuery(carried)}`} carried={carried}>
+      <div className="flex flex-col items-center gap-1">
+        <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
+          Destinataire
+        </h1>
+        <p className="text-[var(--text-secondary)] text-center text-sm sm:text-base">
+          Coordonnées de la personne qui recevra la carte cadeau
+        </p>
+      </div>
 
       <form
         onSubmit={handleSubmit}
@@ -51,7 +58,7 @@ export default function CoordonneesDestinatairePage({ searchParams }: PageProps)
             type="text"
             value={prenom}
             onChange={(event) => setPrenom(event.target.value)}
-            placeholder="Prénom"
+            placeholder="Prénom *"
             aria-label="Prénom du destinataire"
           />
 
@@ -59,7 +66,7 @@ export default function CoordonneesDestinatairePage({ searchParams }: PageProps)
             type="text"
             value={nom}
             onChange={(event) => setNom(event.target.value)}
-            placeholder="Nom"
+            placeholder="Nom *"
             aria-label="Nom du destinataire"
           />
 

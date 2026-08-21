@@ -26,10 +26,12 @@ export default function MontantPersonnalisePage({ searchParams }: PageProps) {
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!isValid) return;
-    const next = { ...carried, amount: String(parsed) };
-    router.push(
-      carried.from === "recap" ? `/recapitulatif${buildQuery({ ...next, from: undefined })}` : `/pour-qui${buildQuery(next)}`,
-    );
+    const next = { ...carried, amount: String(parsed), type: "montant", pack: undefined };
+    if (carried.from === "recap") {
+      router.push(`/recapitulatif${buildQuery({ ...next, from: undefined })}`);
+    } else {
+      router.push(`/mode-de-livraison${buildQuery(next)}`);
+    }
   };
 
   return (
@@ -39,7 +41,7 @@ export default function MontantPersonnalisePage({ searchParams }: PageProps) {
           Montant personnalisé
         </h1>
         <p className="text-[var(--text-secondary)]">
-          Entre {MIN_AMOUNT.toLocaleString("de-DE")} et {MAX_AMOUNT.toLocaleString("de-DE")} FCFA
+          Entre {MIN_AMOUNT.toLocaleString("fr-FR")} et {MAX_AMOUNT.toLocaleString("fr-FR")} FCFA
         </p>
       </div>
 
@@ -54,7 +56,7 @@ export default function MontantPersonnalisePage({ searchParams }: PageProps) {
           max={MAX_AMOUNT}
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
-          placeholder="Montant en FCFA"
+          placeholder="Montant en FCFA *"
           aria-label="Montant personnalisé en FCFA"
           autoFocus
           className="[appearance:textfield] text-center [&::-webkit-inner-spin-button]:m-0 [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:m-0 [&::-webkit-outer-spin-button]:appearance-none"

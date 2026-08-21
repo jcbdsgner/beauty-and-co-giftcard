@@ -237,8 +237,9 @@ export function IntroGate() {
             />
             {state === "idle" && (
               // Overlaid on top of the video, not composited into it —
-              // left-aligned, vertically centered, per design.
-              <div className="absolute inset-0 flex flex-col items-start justify-center gap-8 pt-6 pl-6 sm:gap-10 sm:pl-12 lg:pl-[72px]">
+              // centered (both axes) on mobile only; left-aligned,
+              // vertically centered, per design from sm up.
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-8 px-6 pt-6 text-center sm:items-start sm:gap-10 sm:pl-12 sm:text-left lg:pl-[72px]">
                 <Image
                   src="/images/logo.svg"
                   alt="Beauty and Co"
@@ -248,10 +249,26 @@ export function IntroGate() {
                   className="h-24 w-auto sm:h-32 lg:h-40 xl:h-[165px]"
                 />
                 <p className="hidden font-sans text-base uppercase tracking-[0.2em] text-black sm:block">
-                  Cliquer pour ouvrir le cadeau
+                  <span className="relative inline-block pb-1">
+                    Cliquer sur l&apos;écran pour ouvrir le cadeau
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 bottom-0 h-px bg-black ${
+                        reduceMotion ? "" : "animate-gate-underline"
+                      }`}
+                    />
+                  </span>
                 </p>
                 <p className="font-sans text-base uppercase tracking-[0.2em] text-black sm:hidden">
-                  Glisser pour ouvrir le cadeau
+                  <span className="relative inline-block pb-1">
+                    Glisser pour ouvrir le cadeau
+                    <span
+                      aria-hidden="true"
+                      className={`absolute inset-x-0 bottom-0 h-px bg-black ${
+                        reduceMotion ? "" : "animate-gate-underline"
+                      }`}
+                    />
+                  </span>
                 </p>
               </div>
             )}

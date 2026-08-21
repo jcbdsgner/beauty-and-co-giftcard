@@ -19,8 +19,10 @@ type PageProps = {
 export default function ModeDeLivraisonPage({ searchParams }: PageProps) {
   const carried = use(searchParams);
 
+  const backHref = carried.type === "pack" ? "/packs" : "/montant";
+
   return (
-    <FlowScreen backHref="/" carried={carried}>
+    <FlowScreen backHref={`${backHref}${buildQuery(carried)}`} carried={carried}>
       <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">
         Mode de réception
       </h1>
@@ -29,15 +31,18 @@ export default function ModeDeLivraisonPage({ searchParams }: PageProps) {
         {OPTIONS.map(({ icon, label, mode }) => {
           const next = { ...carried, mode };
           // Retrait en salon needs one extra decision — which salon — before
-          // Montant; the other two modes go straight there. The `from=recap`
-          // shortcut still routes through it first so an edit can pick a
-          // different salon before landing back on Récapitulatif.
+          // Destinataire/Vos coordonnées; the other two modes go straight
+          // there. The `from=recap` shortcut still routes through it first so
+          // an edit can pick a different salon before landing back on
+          // Récapitulatif.
           const href =
             mode === "retrait"
               ? `/choix-salon${buildQuery(next)}`
               : carried.from === "recap"
                 ? `/recapitulatif${buildQuery({ ...next, from: undefined })}`
-                : `/montant${buildQuery(next)}`;
+                : carried.pour === "moi"
+                  ? `/vos-coordonnees${buildQuery(next)}`
+                  : `/coordonnees-destinataire${buildQuery(next)}`;
           return <OptionCard key={mode} href={href} icon={icon} label={label} size="sm" />;
         })}
       </div>

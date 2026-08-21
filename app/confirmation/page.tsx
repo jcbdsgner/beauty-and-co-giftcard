@@ -1,7 +1,7 @@
 "use client";
 
 import { use } from "react";
-import { CheckCircle2, QrCode } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { SiteLogo } from "@/components/layout/site-logo";
 import { Button } from "@/components/ui/button";
 import { ReferenceBox } from "@/components/ui/reference-box";
@@ -26,8 +26,8 @@ export default function ConfirmationPage({ searchParams }: PageProps) {
     if (carried.mode === "retrait") {
       const salon = carried.salon ? SALON_LABELS[carried.salon] : undefined;
       return salon
-        ? `Présentez ce code au salon ${salon} pour récupérer votre carte cadeau.`
-        : "Présentez ce code en salon pour récupérer votre carte cadeau.";
+        ? `Présentez ce code (aussi reçu par email) au salon ${salon} pour récupérer et utiliser votre carte cadeau.`
+        : "Présentez ce code (aussi reçu par email) en salon pour récupérer et utiliser votre carte cadeau.";
     }
     return carried.envoi === "programme" && carried.envoi_date
       ? `Votre carte sera expédiée le ${new Date(carried.envoi_date).toLocaleDateString("fr-FR")}, livraison estimée sous 3 à 5 jours ouvrés après expédition.`
@@ -49,11 +49,7 @@ export default function ConfirmationPage({ searchParams }: PageProps) {
         <p className="text-[var(--text-secondary)] max-w-md">{modeMessage()}</p>
       </div>
 
-      <ReferenceBox reference={reference}>
-        {carried.mode === "retrait" && (
-          <QrCode size={120} strokeWidth={1} className="text-[var(--on-core-brand-color)]" />
-        )}
-      </ReferenceBox>
+      <ReferenceBox reference={reference} hint={carried.mode === "retrait" ? null : undefined} />
 
       <div className="flex w-[min(90vw,26rem)] flex-col items-center gap-4">
         <Button href="/" className="w-full">

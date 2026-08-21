@@ -1,4 +1,5 @@
 import type { GiftCard } from "@/lib/cards/types";
+import { getPackById } from "@/lib/packs";
 
 const CARDS_KEY = "bco-giftcards";
 
@@ -27,6 +28,13 @@ function daysAgo(days: number): string {
   return date.toISOString();
 }
 
+/** A card's expiration is always 6 months out from whichever last touched it — purchase or recharge. */
+export function addMonths(dateIso: string, months: number): string {
+  const date = new Date(dateIso);
+  date.setMonth(date.getMonth() + months);
+  return date.toISOString();
+}
+
 // Card ids are used as URL path segments (/mes-cartes-cadeaux/liste/[id]) —
 // embedding a raw email there broke navigation (the "@" round-trips through
 // Next's param decoding inconsistently), so seeded ids are hashed down to a
@@ -41,14 +49,17 @@ function hashString(input: string): string {
 
 /**
  * Demo seed data — the first time a given email has no cards at all, we
- * create 3 illustrative ones so "Mes cartes cadeaux" never looks empty in
+ * create 4 illustrative ones so "Mes cartes cadeaux" never looks empty in
  * the demo: one bought for yourself (fully spent), one you bought for
  * someone else (partway spent — you can still track their remaining
- * balance), and one someone else bought for you (untouched). Written to
- * storage once, then behaves exactly like real purchase history.
+ * balance), one someone else bought for you (untouched), and one you
+ * bought for someone else as a service pack rather than a monetary amount
+ * (see `lib/packs`). Written to storage once, then behaves exactly like
+ * real purchase history.
  */
 function seedDemoCards(normalizedEmail: string): GiftCard[] {
   const idPrefix = `demo-${hashString(normalizedEmail)}`;
+  const pack = getPackById("eclat-express");
   return [
     {
       id: `${idPrefix}-1`,
@@ -60,6 +71,7 @@ function seedDemoCards(normalizedEmail: string): GiftCard[] {
       buyerName: "Vous",
       buyerEmail: normalizedEmail,
       createdAt: daysAgo(45),
+      expiresAt: addMonths(daysAgo(45), 6),
     },
     {
       id: `${idPrefix}-2`,
@@ -75,6 +87,7 @@ function seedDemoCards(normalizedEmail: string): GiftCard[] {
       destPhone: "77 123 45 67",
       message: "Joyeux anniversaire !",
       createdAt: daysAgo(20),
+      expiresAt: addMonths(daysAgo(20), 6),
     },
     {
       id: `${idPrefix}-3`,
@@ -90,7 +103,28 @@ function seedDemoCards(normalizedEmail: string): GiftCard[] {
       destAddress: "Villa 12, Cité Bellevue",
       message: "Pour te faire plaisir chez B&Co",
       createdAt: daysAgo(5),
+      expiresAt: addMonths(daysAgo(5), 6),
     },
+    ...(pack
+      ? [
+          {
+            id: `${idPrefix}-4`,
+            reference: "BCO-DEMO04",
+            mode: "numerique" as const,
+            amount: pack.price,
+            balance: pack.price,
+            packId: pack.id,
+            status: "envoyee" as const,
+            buyerName: "Vous",
+            buyerEmail: normalizedEmail,
+            destName: "Fatou Sarr",
+            destEmail: "fatou.sarr@example.com",
+            message: "Un petit moment rien que pour toi",
+            createdAt: daysAgo(2),
+            expiresAt: addMonths(daysAgo(2), 6),
+          },
+        ]
+      : []),
   ];
 }
 
@@ -109,4 +143,29 @@ export function getCardsForEmail(email: string): GiftCard[] {
 
 export function getCardById(id: string): GiftCard | undefined {
   return readCards().find((card) => card.id === id);
+}
+
+/**
+ * Reloads a card that's already been drawn down. The new balance (old
+ * balance + the recharge) becomes the card's `amount` too, not just its
+ * `balance` — a recharge resets the card to "full" rather than measuring
+ * it against what it originally cost, so the original purchase amount is
+ * discarded as a reference point. Also resets `expiresAt` to 6 months out,
+ * same as a fresh purchase.
+ */
+export function topUpCard(id: string, addedAmount: number): GiftCard | undefined {
+  const cards = readCards();
+  const index = cards.findIndex((card) => card.id === id);
+  if (index === -1) return undefined;
+
+  const newBalance = cards[index].balance + addedAmount;
+  const updated: GiftCard = {
+    ...cards[index],
+    amount: newBalance,
+    balance: newBalance,
+    expiresAt: addMonths(new Date().toISOString(), 6),
+  };
+  cards[index] = updated;
+  writeCards(cards);
+  return updated;
 }

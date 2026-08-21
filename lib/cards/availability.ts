@@ -21,6 +21,11 @@ export function getCardAvailability(card: Pick<GiftCard, "balance" | "status">):
   return "disponible";
 }
 
+/** Any card still carrying a balance can be reloaded — only an exhausted ("épuisée") card can't. A service pack isn't a wallet balance, so it can't be recharged either. */
+export function canTopUp(card: Pick<GiftCard, "balance" | "packId">): boolean {
+  return card.balance > 0 && !card.packId;
+}
+
 export const AVAILABILITY_LABELS: Record<CardAvailability, string> = {
   disponible: "Disponible",
   programmee: "Programmée",

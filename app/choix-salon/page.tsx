@@ -28,7 +28,9 @@ export default function ChoixSalonPage({ searchParams }: PageProps) {
           const href =
             carried.from === "recap"
               ? `/recapitulatif${buildQuery({ ...next, from: undefined })}`
-              : `/montant${buildQuery(next)}`;
+              : carried.pour === "moi"
+                ? `/vos-coordonnees${buildQuery(next)}`
+                : `/coordonnees-destinataire${buildQuery(next)}`;
           return (
             <OptionCard key={salon} href={href} icon={MapPin} label={SALON_LABELS[salon]} size="sm" />
           );

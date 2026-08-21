@@ -46,14 +46,14 @@ export default function ConnexionPage({ searchParams }: PageProps) {
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
-          placeholder="Email"
+          placeholder="Email *"
           aria-label="Email"
         />
         <TextField
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          placeholder="Mot de passe"
+          placeholder="Mot de passe *"
           aria-label="Mot de passe"
         />
 

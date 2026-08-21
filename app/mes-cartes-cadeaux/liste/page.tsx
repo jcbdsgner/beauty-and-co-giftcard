@@ -10,6 +10,7 @@ import { getCardsForEmail } from "@/lib/cards/persistence";
 import type { GiftCard } from "@/lib/cards/types";
 import { getRelationshipLabel } from "@/lib/cards/relationship";
 import { AVAILABILITY_LABELS, AVAILABILITY_TEXT_CLASSES, getCardAvailability } from "@/lib/cards/availability";
+import { getPackById } from "@/lib/packs";
 import { MODE_LABELS, formatFcfa } from "@/lib/format";
 import { buildQuery } from "@/lib/flow-params";
 
@@ -56,6 +57,7 @@ export default function MesCartesCadeauxListePage({ searchParams }: PageProps) {
           {cards.map((card, index) => {
             const availability = getCardAvailability(card);
             const ModeIcon = MODE_ICONS[card.mode] ?? Gift;
+            const pack = getPackById(card.packId);
             return (
               <Link
                 key={card.id}
@@ -70,8 +72,11 @@ export default function MesCartesCadeauxListePage({ searchParams }: PageProps) {
                     {MODE_LABELS[card.mode] ?? card.mode}
                   </span>
                   <span className="text-[var(--on-core-brand-color)] text-lg font-bold leading-tight sm:text-xl sm:font-semibold">
-                    {formatFcfa(card.balance)}
-                    {card.balance !== card.amount ? ` / ${formatFcfa(card.amount)}` : ""}
+                    {pack
+                      ? pack.label
+                      : `${formatFcfa(card.balance)}${
+                          card.balance !== card.amount ? ` / ${formatFcfa(card.amount)}` : ""
+                        }`}
                   </span>
                   <span className="text-[var(--text-secondary)] text-sm">
                     {email ? getRelationshipLabel(card, email) : ""}
@@ -88,7 +93,7 @@ export default function MesCartesCadeauxListePage({ searchParams }: PageProps) {
         </div>
       )}
 
-      <Button href="/mode-de-livraison" size="lg" className="w-[min(92vw,34rem)]">
+      <Button href="/pour-qui" size="lg" className="w-[min(92vw,34rem)]">
         Acheter une nouvelle carte
       </Button>
     </section>

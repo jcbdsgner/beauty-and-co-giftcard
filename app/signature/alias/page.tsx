@@ -45,7 +45,7 @@ export default function SignatureAliasPage({ searchParams }: PageProps) {
           type="text"
           value={alias}
           onChange={(event) => setAlias(event.target.value)}
-          placeholder="Votre alias"
+          placeholder="Votre alias *"
           aria-label="Votre alias"
           autoFocus
           className="text-center"

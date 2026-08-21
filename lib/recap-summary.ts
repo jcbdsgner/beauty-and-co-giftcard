@@ -6,6 +6,7 @@ import {
   MessageCircle,
   PenLine,
   Send,
+  Sparkles,
   Store,
   TabletSmartphone,
   Truck,
@@ -13,6 +14,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { MODE_LABELS, SALON_LABELS, formatFcfa } from "@/lib/format";
+import { getPackById } from "@/lib/packs";
 
 export type CarriedParams = Record<string, string | undefined>;
 
@@ -37,7 +39,12 @@ export function buildRecapLines(carried: CarriedParams): RecapLine[] {
   if (carried.mode === "retrait" && carried.salon) {
     lines.push({ icon: MapPin, text: SALON_LABELS[carried.salon] ?? carried.salon });
   }
-  if (carried.amount) lines.push({ icon: Wallet, text: formatFcfa(carried.amount) });
+  if (carried.pack) {
+    const pack = getPackById(carried.pack);
+    lines.push({ icon: Sparkles, text: pack?.label ?? "Pack de services" });
+  } else if (carried.amount) {
+    lines.push({ icon: Wallet, text: formatFcfa(carried.amount) });
+  }
   const destFullName = [carried.dest_prenom, carried.dest_nom].filter(Boolean).join(" ");
   if (destFullName) lines.push({ icon: Gift, text: `Pour ${destFullName}` });
   if (carried.message?.trim()) {

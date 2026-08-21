@@ -23,7 +23,7 @@ export function Hero() {
           to the top edge like before from sm up, once the card is centered
           by the section itself again. */}
       <div className="flex justify-center sm:absolute sm:inset-x-0 sm:top-8">
-        <SiteLogo />
+        <SiteLogo sizeClassName="h-[72px] w-auto min-w-[155px] sm:h-[101px] sm:min-w-[218px]" />
       </div>
 
       <div className="mt-[92px] sm:mt-0">
@@ -48,7 +48,7 @@ export function Hero() {
                 Gérer mes cartes
               </Button>
               <Button
-                href="/mode-de-livraison"
+                href="/pour-qui"
                 variant="brand"
                 size="lg"
                 className="w-full bg-white lg:w-auto"

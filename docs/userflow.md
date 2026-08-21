@@ -48,9 +48,12 @@ retrouver mes cartes cadeaux plus tard, même si je n'ai pas de compte.
 | 12 | Frais de livraison (mode = postal) | **Frais fixe de 2 000 FCFA**, ajouté au montant de la carte sur le Récapitulatif et le Paiement (ligne dédiée + total). Ne fait pas partie de la valeur/solde de la carte cadeau elle-même — c'est un frais de service, pas un montant chargeable en boutique. |
 | 13 | Zone de livraison couverte | **Quartiers de Dakar + Mbour**, choisis via un sélecteur dédié sur l'écran "Adresse de livraison" (pas de saisie libre de ville) — cohérent avec un service de coursier local plutôt qu'un envoi postal national. |
 | 14 | Place de la prévisualisation 3D | **Écran dédié "Aperçu de la carte", juste avant Récapitulatif** (pas fondue dans l'écran Récapitulatif, pas avant que les données soient connues). Raisons : (a) le recto affiche le montant et le verso affiche message + signature — la carte ne peut être rendue fidèlement qu'une fois ces champs connus, donc pas plus tôt que la fin de la saisie ; (b) Récapitulatif reste l'écran transactionnel dense (lignes "Modifier", total, "Payer") — y ajouter un canvas 3D dilue le CTA de paiement et alourdit un écran déjà chargé ; (c) l'ordre "aperçu visuel émotionnel" → "relecture rationnelle avant paiement" suit un séquençage éprouvé pour un achat-cadeau (l'enthousiasme d'abord, la vérification des détails juste avant de payer). |
-| 15 | Choix du salon (mode = retrait) | **Écran dédié "Choisir un salon", juste après Mode de livraison** (avant Montant) — deux salons pour l'instant : **Sea Plaza** et **Almadies**. Placé là plutôt qu'avec les coordonnées destinataire car c'est un attribut du mode choisi par l'acheteur (où le code de retrait sera présenté), pas une information sur le destinataire ; même pattern OptionCard que les autres choix binaires/ternaires du parcours (Mode de livraison, Pour qui ?, Quand l'envoyer ?). |
+| 15 | Choix du salon (mode = retrait) | **Écran dédié "Choisir un salon", juste après Mode de livraison** (avant Destinataire/Vos coordonnées — voir décision 20 pour la position de Mode de livraison lui-même) — deux salons pour l'instant : **Sea Plaza** et **Almadies**. Placé là plutôt qu'avec les coordonnées destinataire car c'est un attribut du mode choisi par l'acheteur (où le code de retrait sera présenté), pas une information sur le destinataire ; même pattern OptionCard que les autres choix binaires/ternaires du parcours (Mode de livraison, Pour qui ?, Quand l'envoyer ?). |
 | 16 | Programmer une date, modes concernés | **Numérique et Livraison, pas Retrait en salon.** "Quand l'envoyer ?" s'ouvre pour les deux modes qui ont une notion de dispatch à une date choisie (email envoyé à une heure précise, colis expédié un jour précis) ; le retrait en salon en est exclu par choix produit — le code de retrait reste valable dès l'achat, sans date à cibler. |
 | 17 | Destinataire, structure | **Un seul écran "Destinataire"** : **Prénom** + **Nom**, puis **Téléphone** + **Email** (au moins un des deux requis), quel que soit le mode de réception — le téléphone n'est plus réservé au mode retrait/postal (SMS, livreur), il est un canal de contact valable pour tous les modes au même titre que l'email. Fusionné depuis deux écrans séparés (revue UX du 2026-08-14, écrans jugés incohérents avec l'écran "Vos coordonnées" de l'acheteur, qui tient sur un seul écran pour la même quantité d'information) — mis en page en grille 2 colonnes (Prénom/Nom sur une ligne, Téléphone/Email sur l'autre, empilés en une colonne sur mobile) pour rester court sans risquer de faire défiler la page jusqu'au bouton "Continuer" ; même traitement 2 colonnes appliqué à "Vos coordonnées" pour la cohérence. |
+| 18 | Type de carte (montant vs pack de services) | **Nouvel écran "Type de carte", entre Pour qui ? et Montant** (voir décision 20 pour la position de Mode de livraison, désormais après Montant/Pack). Deux choix : un montant libre (écran "Montant" existant) ou un pack de services prédéfini (nouvel écran "Pack de services", 4 packs fictifs construits à partir de vraies prestations b&co — coiffure, spa, manucure/pédicure, soin du visage — à un tarif groupé inférieur à la somme de leurs prestations). Les deux convergent ensuite vers le même embranchement Mode de livraison — un pack fixe simplement le "montant" de la carte à son prix, sans changer le reste du parcours. |
+| 19 | Position de "Pour qui ?" | **Tout premier écran du parcours (avant Mode de livraison), décision du 2026-08-20.** Revu depuis la position initiale (juste après Montant) : "pour qui" conditionne quel formulaire de coordonnées suit plus tard (Destinataire vs. Vos coordonnées seul), donc il ouvre le parcours au lieu d'arriver après la composition de la carte — cohérent avec le fait que c'est la décision la plus structurante de la commande, avant même le mode de réception ou le montant. |
+| 20 | Position de "Mode de livraison" | **Après Montant / Pack de services (décision du 2026-08-21).** Revu depuis la position initiale (juste après Pour qui ?, avant Type de carte) : le mode de réception s'enchaîne mieux juste avant Destinataire/Vos coordonnées, dont il conditionne directement le contenu (adresse de livraison si postal, salon si retrait) — composer la carte (type + montant/pack) d'abord, puis choisir comment elle est reçue, avant de saisir les coordonnées qui en dépendent. "Choisir un salon" reste juste après Mode de livraison (inchangé, décision 15). |
 
 ### Constat technique — "le même compte que b&co"
 
@@ -63,7 +66,7 @@ retrouver mes cartes cadeaux plus tard, même si je n'ai pas de compte.
 
 ---
 
-## Conventions transverses (tout le parcours d'achat, Mode de livraison → Paiement)
+## Conventions transverses (tout le parcours d'achat, Pour qui ? → Paiement)
 
 Deux éléments d'interface présents sur **chaque écran du parcours d'achat** — pas des affordances propres à un seul écran, donc factorisées ici plutôt que répétées dans chaque bloc du breadboard ci-dessous :
 
@@ -78,14 +81,18 @@ Ni l'un ni l'autre n'apparaît sur Landing (pas d'étape précédente, rien à r
 
 ```mermaid
 graph LR
-  A[Landing] --> B[Mode de livraison]
+  A[Landing] --> D0[Pour qui ?]
   A -.->|Voir mes cartes cadeaux| N[Mes cartes cadeaux — entrée]
+  D0 --> B2[Type de carte]
+  B2 -->|montant| C[Montant]
+  B2 -->|pack| C2[Pack de services]
+  C --> B[Mode de livraison]
+  C2 --> B
   B -->|mode = retrait| B1[Choisir un salon]
-  B1 --> C[Montant]
-  B -->|mode != retrait| C[Montant]
-  C --> D[Pour qui ?]
-  D -->|pour quelqu'un d'autre| E[Destinataire]
-  D -->|pour moi-même| G[Vos coordonnées]
+  B -->|mode != retrait| E0{Pour qui ?}
+  B1 --> E0
+  E0 -->|pour quelqu'un d'autre| E[Destinataire]
+  E0 -->|pour moi-même| G[Vos coordonnées]
   E -->|mode = postal| E1[Adresse de livraison]
   E -->|mode != postal| F[Message]
   E1 -->|pour quelqu'un d'autre| F
@@ -116,49 +123,68 @@ graph LR
 
 ```
 Landing (page marketing existante — Hero)
-- "Composer ma carte" → Mode de livraison
+- "Composer ma carte" → Pour qui ?
 - "Voir mes cartes cadeaux" → Mes cartes cadeaux — entrée
 [ carte 3D, accroche, palette B&Co ]
 ```
 
 ```
-Mode de livraison
-- "Numérique" → Montant                    (mode = numérique)
-- "Retrait en salon" → Choisir un salon     (mode = retrait)
-- "Livraison" → Montant                     (mode = postal)
+Pour qui ?
+- "Pour offrir" → Type de carte
+- "Pour moi-même" → Type de carte
 - ← Landing
-[ 3 options avec description courte : délai, gratuité/frais, ce que reçoit le destinataire ]
+[ deux options, pas de formulaire sur cet écran — voir décision 19 pour pourquoi cette
+  décision ouvre le parcours plutôt que d'arriver après Montant/Pack ]
+```
+
+```
+Type de carte
+- "Un montant" → Montant
+- "Un pack de services" → Pack de services
+- ← Pour qui ?
+[ deux options — voir décision 18 pour pourquoi le pack de services existe et comment
+  il rejoint le même embranchement Mode de livraison que Montant ]
+```
+
+```
+Montant
+- montant prédéfini (x4) → Mode de livraison
+- "Montant personnalisé" (champ + bornes min/max) → idem
+- ← Type de carte
+[ Pas de choix de design ici ni ailleurs : design unique, non affiché comme décision ]
+```
+
+```
+Pack de services
+- pack (x4, carte avec tarif + prestations incluses) → Mode de livraison
+- ← Type de carte
+[ 4 cartes fictives construites à partir de vraies prestations b&co — tarif groupé,
+  tagline, description, liste des prestations incluses avec leur durée ]
+```
+
+```
+Mode de livraison
+- "Numérique" → Destinataire (pour offrir) / Vos coordonnées (pour moi-même)     (mode = numérique)
+- "Retrait en salon" → Choisir un salon                                          (mode = retrait)
+- "Livraison" → Destinataire (pour offrir) / Vos coordonnées (pour moi-même)     (mode = postal)
+- ← Montant / Pack de services (selon le type de carte choisi)
+[ 3 options avec description courte : délai, gratuité/frais, ce que reçoit le destinataire —
+  voir décision 20 pour pourquoi cet écran vient après Montant/Pack plutôt qu'avant ]
 ```
 
 ```
 Choisir un salon                              (seulement si mode = retrait)
-- "Sea Plaza" → Montant
-- "Almadies" → Montant
+- "Sea Plaza" → Destinataire (pour offrir) / Vos coordonnées (pour moi-même)
+- "Almadies" → Destinataire (pour offrir) / Vos coordonnées (pour moi-même)
 - ← Mode de livraison
 [ 2 options, même pattern que les autres choix binaires du parcours (OptionCard) —
   détermine où le destinataire/l'acheteur viendra présenter le code de retrait ]
 ```
 
 ```
-Montant
-- montant prédéfini (x4) → Pour qui ?
-- "Montant personnalisé" (champ + bornes min/max) → Pour qui ?
-- ← Mode de livraison
-[ Pas de choix de design ici ni ailleurs : design unique, non affiché comme décision ]
-```
-
-```
-Pour qui ?
-- "Pour quelqu'un d'autre" → Destinataire
-- "Pour moi-même" → Vos coordonnées          (saute destinataire + message + signature)
-- ← Montant
-[ deux options, pas de formulaire sur cet écran ]
-```
-
-```
 Destinataire                                  (seulement si "pour quelqu'un d'autre" — 1 destinataire)
 - Continuer → Adresse de livraison (si mode = postal) / Message (sinon)
-- ← Pour qui ?
+- ← Mode de livraison / Choisir un salon (si mode = retrait)
 [ Prénom + Nom, puis Téléphone + Email (au moins un des deux obligatoire, quel que soit
   le mode — voir décision 17) ; mise en page 2 colonnes (Prénom/Nom, Téléphone/Email),
   empilée en 1 colonne sur mobile — même traitement que "Vos coordonnées" ]
@@ -189,7 +215,7 @@ Vos coordonnées                               (l'acheteur — toujours demandé
              / Adresse de livraison (pour moi-même, mode = postal)
              / Quand l'envoyer ? (pour moi-même, mode ≠ postal et ≠ retrait)
              / Aperçu de la carte (pour moi-même, mode = retrait)
-- ← Message (ou ← Pour qui ? si "pour moi-même")
+- ← Message (ou ← Mode de livraison / Choisir un salon si "pour moi-même")
 [ Prénom + Nom, Téléphone + Email — tous obligatoires (contrairement au destinataire, où
   seul l'un des deux canaux est requis : l'acheteur est toujours le contact fiable pour
   le reçu et le suivi de commande) ; sert aussi à préremplir l'option "Mon nom" de l'écran
@@ -229,10 +255,11 @@ Récapitulatif
 - "Modifier" sur chaque bloc → renvoie à l'écran correspondant (données conservées)
 - "Payer" → Paiement
 - ← Aperçu de la carte
-[ résumé : mode, salon de retrait (si mode = retrait), montant, frais de livraison
-  (si mode = postal, non modifiable ici), destinataire (ou, pour un achat "pour
-  moi-même" en livraison postale, la propre adresse de livraison de l'acheteur),
-  message, signature, date d'envoi, total à payer (montant + livraison) ]
+[ résumé : mode, salon de retrait (si mode = retrait), pour qui, montant ou pack de
+  services (prestations incluses), frais de livraison (si mode = postal, non modifiable
+  ici), destinataire (ou, pour un achat "pour moi-même" en livraison postale, la propre
+  adresse de livraison de l'acheteur), message, signature, date d'envoi, total à payer
+  (montant/pack + livraison) ]
 ```
 
 ```
