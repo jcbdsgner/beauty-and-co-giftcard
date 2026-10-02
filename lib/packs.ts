@@ -66,6 +66,45 @@ export const SERVICE_PACKS: ServicePack[] = [
       { label: "Pack épilations complètes", duration: "60 min" },
     ],
   },
+  // Packs fictifs pour la démo (pas dans la grille b&co) — ils réutilisent les
+  // 4 visuels ci-dessus dans le même ordre, pour que deux photos identiques ne
+  // soient jamais côte à côte dans le carrousel de app/packs.
+  {
+    id: "cheveux-sublimes",
+    label: "Pack Cheveux Sublimés",
+    image: "/images/packs/eclat-express.jpg",
+    description: "Soin profond, coupe et brushing pour une chevelure nourrie et lumineuse.",
+    price: 48000,
+    items: [
+      { label: "Soin profond kératine", duration: "45 min" },
+      { label: "Coupe & finition", duration: "45 min" },
+      { label: "Brushing", duration: "30 min" },
+    ],
+  },
+  {
+    id: "evasion-detente",
+    label: "Pack Évasion Détente",
+    image: "/images/packs/cocooning-duo.jpg",
+    description: "Massage relaxant et gommage corps pour relâcher toutes les tensions.",
+    price: 72000,
+    items: [
+      { label: "Massage relaxant corps", duration: "60 min" },
+      { label: "Gommage corps", duration: "30 min" },
+      { label: "Rituel thé & repos", duration: "15 min" },
+    ],
+  },
+  {
+    id: "mains-de-reine",
+    label: "Pack Mains de Reine",
+    image: "/images/packs/beaute-des-mains.png",
+    description: "Manucure spa, pose gel et soin paraffine pour des mains d'exception.",
+    price: 42000,
+    items: [
+      { label: "Manucure spa", duration: "45 min" },
+      { label: "Pose gel couleur", duration: "45 min" },
+      { label: "Soin paraffine mains", duration: "20 min" },
+    ],
+  },
 ];
 
 export function getPackById(id: string | undefined): ServicePack | undefined {
