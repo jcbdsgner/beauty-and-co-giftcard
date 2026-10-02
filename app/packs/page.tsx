@@ -33,7 +33,7 @@ export default function PacksPage({ searchParams }: PageProps) {
         <div className="flex shrink-0 flex-col items-center gap-2 text-center">
           <h1 className="font-heading text-3xl text-[var(--on-core-brand-color)] sm:text-4xl">Pack de services</h1>
           <p className="text-[15px] text-[var(--text-secondary)] sm:text-[17px]">
-            {SERVICE_PACKS.length} packs à offrir — faites défiler pour tous les découvrir
+            Faites défiler pour tous les découvrir
           </p>
         </div>
         <PackCarousel packs={SERVICE_PACKS} hrefFor={nextHref} initialPackId={carried.pack} />
