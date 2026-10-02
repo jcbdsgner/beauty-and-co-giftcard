@@ -18,7 +18,6 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
   const [nom, setNom] = useState(carried.buyer_nom ?? "");
   const [telephone, setTelephone] = useState(carried.buyer_telephone ?? "");
   const [email, setEmail] = useState(carried.buyer_email ?? "");
-  const [hideIdentity, setHideIdentity] = useState(carried.buyer_confidentiel === "1");
 
   const isForSomeoneElse = carried.pour !== "moi";
   const isValid =
@@ -38,7 +37,7 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
       buyer_nom: nom,
       buyer_telephone: telephone,
       buyer_email: email,
-      buyer_confidentiel: hideIdentity ? "1" : "0",
+      buyer_confidentiel: undefined,
     };
 
     if (carried.from === "recap") {
@@ -100,18 +99,6 @@ export default function VosCoordonneesPage({ searchParams }: PageProps) {
             className="sm:col-span-2"
           />
         </div>
-
-        {isForSomeoneElse && (
-          <label className="text-[var(--text-secondary)] flex w-full items-start gap-2 px-1 text-sm">
-            <input
-              type="checkbox"
-              checked={hideIdentity}
-              onChange={(event) => setHideIdentity(event.target.checked)}
-              className="mt-0.5 accent-[var(--core-brand-color)]"
-            />
-            Garder mes coordonnées confidentielles (non visibles par le destinataire)
-          </label>
-        )}
 
         <Button type="submit" size="lg" disabled={!isValid} className="w-full">
           Continuer

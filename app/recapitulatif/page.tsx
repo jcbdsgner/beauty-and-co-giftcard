@@ -40,10 +40,6 @@ export default function RecapitulatifPage({ searchParams }: PageProps) {
     {
       label: "Vos coordonnées",
       value: [buyerFullName, carried.buyer_telephone, carried.buyer_email].filter(Boolean).join(" · ") || "—",
-      note:
-        carried.buyer_confidentiel === "1"
-          ? "Confidentielles — non communiquées au destinataire"
-          : undefined,
     },
     {
       label: "Pour qui ?",
